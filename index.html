@@ -81,6 +81,44 @@
  .titlebox .icon{display:none}
  .titlebox small{font-size:9px}
 }
+
+/* UX mobile v3 — seleção com ficha compacta, bairros sob demanda */
+.mobile-detail-actions{display:none}
+@media(max-width:700px){
+ html,body,.app{overflow:hidden;overscroll-behavior:none}
+ .sidebar{transition:transform .23s ease,opacity .19s ease,height .25s ease}
+ .sidebar.has-selection{transform:translateY(calc(100% + 20px));opacity:0;pointer-events:none}
+ .detail,.detail.open{top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 10px);left:10px;right:10px;width:auto;height:136px;max-height:calc(100dvh - 100px);border:1px solid #dbe5ec;border-radius:19px;box-shadow:0 13px 35px #1029423b;transition:transform .25s ease,height .24s ease;z-index:755}
+ .detail:not(.open){transform:translateY(calc(100% + 22px))}
+ .detail.open{transform:translateY(0)}
+ .detail.mobile-expanded{height:min(49dvh,445px)}
+ .detail-head{padding:12px 16px 11px;min-height:134px;max-height:134px;flex:0 0 134px;background:#fff!important;color:#182c40!important;border-left:5px solid var(--micro-color,#3b9e86)}
+ .detail-head:after{width:115px;height:115px;border:20px solid #19345408;right:-44px;top:-58px}
+ .detail-head .kicker{font-size:9px;letter-spacing:.10em;color:#788697;opacity:1;margin-right:30px}
+ .detail-head h2{font-size:23px;letter-spacing:-.4px;line-height:1.2;margin:2px 0 3px}
+ .detail-head p{font-size:11px;color:#607286;opacity:1;margin:0}
+ .detail-head .close{background:#f0f4f7;color:#30465b;border:0;right:11px;top:12px;width:32px;height:32px;border-radius:10px;box-shadow:none}
+ .mobile-detail-actions{display:flex;gap:8px;margin-top:9px;align-items:center}
+ .micro-quick{font-size:11px;font-weight:800;border-radius:9px;padding:8px 13px;background:#153e60;color:#fff;border:1px solid #153e60;min-height:33px}
+ .micro-quick.ghost{background:#f4f7fa;color:#25465e;border-color:#dce7ee}
+ .micro-quick span{font-size:14px;margin-left:2px}
+ .detail-body{display:none;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:10px 16px 20px}
+ .detail.mobile-expanded .detail-body{display:block;flex:1}
+ .detail-people{padding:10px 12px;margin-bottom:13px}
+ .detail-people strong{font-size:12px}
+ .detail h3{font-size:13px;margin:0 0 7px}
+ .micro-bairros{gap:3px}
+ .bairro-button{min-height:43px;font-size:12px;padding:10px 9px;border-bottom:1px solid #eef2f5;border-radius:7px}
+ .detail-subtle{margin:12px 0;font-size:10px;line-height:1.5}
+ .detail-actions{margin-top:12px;padding-top:12px}
+ .detail-actions button{min-height:39px}
+ html.micro-active .map-footer{bottom:calc(env(safe-area-inset-bottom,0px) + 160px)}
+ html.micro-active .leaflet-bottom.leaflet-right,html.micro-active .leaflet-bottom.leaflet-left{bottom:calc(env(safe-area-inset-bottom,0px) + 146px)}
+ html.micro-active .toast{bottom:calc(env(safe-area-inset-bottom,0px) + 162px)}
+ html.micro-active .sidebar~.map-area .map-footer{bottom:calc(env(safe-area-inset-bottom,0px) + 160px)}
+ .layer-panel{max-height:65dvh;overflow-y:auto}
+}
+@media(max-width:360px){.detail-head h2{font-size:21px}.micro-quick{padding:8px 9px}}
 </style>
 </head>
 <body>
@@ -114,7 +152,7 @@
  </div>
  <div class="map-footer"><div class="micro-count"><strong>10</strong> micros <span style="color:#bdc6cf;padding:0 3px">·</span> <strong>79</strong> localidades</div></div>
  <div class="hint">Selecione uma área colorida ou pesquise um bairro</div>
- <div class="detail" id="detail" role="region" aria-label="Informações da micro selecionada"><div class="detail-head" id="detailHead"><button class="close" id="closeDetail" aria-label="Fechar detalhes">×</button><div class="kicker">MICRO SELECIONADA</div><h2 id="detailTitle">Micro 01</h2><p id="detailIntro">Área operacional</p></div><div class="detail-body"><div class="detail-people"><div class="person-avatar" id="avatar">01</div><div><strong id="detailFiscal">Divisão territorial</strong><small id="detailOrig">Micros originais</small></div></div><h3 id="bairroHead">Bairros associados</h3><div class="micro-bairros" id="bairroList"></div><p class="detail-subtle">Associação pelo bairro predominante; em áreas de divisa, confirme a rua ou o trecho antes de atribuir atendimento.</p><div class="detail-actions"><button class="primary" id="detailFocus">Ver área inteira</button><button class="secondary" id="copyDetails">Copiar relação de bairros</button></div></div></div>
+ <div class="detail" id="detail" role="region" aria-label="Informações da micro selecionada"><div class="detail-head" id="detailHead"><button class="close" id="closeDetail" aria-label="Fechar detalhes">×</button><div class="kicker">MICRO SELECIONADA</div><h2 id="detailTitle">Micro 01</h2><p id="detailIntro">Área operacional</p><div class="mobile-detail-actions"><button type="button" class="micro-quick" id="toggleBairros" aria-expanded="false" aria-controls="detailBody">Ver bairros <span aria-hidden="true">⌄</span></button><button type="button" class="micro-quick ghost" id="quickFocus" aria-label="Centralizar a micro no mapa">◎ Centralizar</button></div></div><div class="detail-body" id="detailBody"><div class="detail-people"><div class="person-avatar" id="avatar">01</div><div><strong id="detailFiscal">Divisão territorial</strong><small id="detailOrig">Micros originais</small></div></div><h3 id="bairroHead">Bairros associados</h3><div class="micro-bairros" id="bairroList"></div><p class="detail-subtle">Associação pelo bairro predominante; em áreas de divisa, confirme a rua ou o trecho antes de atribuir atendimento.</p><div class="detail-actions"><button class="primary" id="detailFocus">Ver área inteira</button><button class="secondary" id="copyDetails">Copiar relação de bairros</button></div></div></div>
  <div class="toast" id="toast" role="status" aria-live="polite"></div>
  </main>
 </div>
@@ -152,11 +190,12 @@ function activateSuggestion(item){hideSearch();if(!item)return;
  if(item.type==='bairro'){let b=allBairros.find(x=>x.nome===item.key);selectMicro(b.micro,false);focusBairro(b)}
  if(item.type==='corredor'){setLayer('corredores',true);let l=roadLayers.get(item.key);if(l&&mapReady){map.fitBounds(l.getBounds(),{padding:[70,65],maxZoom:15})}toast('Corredor destacado: '+item.name+' · classificação viária não homologada')}
 }
-function focusMicro(id){if(!mapReady)return;const l=groupLayers.get(id);if(!l)return;const pad=window.innerWidth<700?[100,35]:[75,80]; map.fitBounds(l.getBounds(),{padding:pad,maxZoom:15,animate:true})}
-function focusBairro(b){selectedBairro=b.nome;if(showBairros===false)setLayer('bairros',true);refreshStyles();if(!mapReady)return;const l=bairroLayers.get(b.nome);if(l){map.fitBounds(l.getBounds(),{padding:[75,55],maxZoom:16,animate:true});l.bringToFront();toast(b.nome+' — referência da micro '+b.micro+(b.dividido?' (bairro dividido)':''))}}
-function closeDetail(){selected=null;selectedBairro=null;$('detail').classList.remove('open');renderGroups();refreshStyles();saveHash(null)}
-function selectMicro(id,fit=true){if(!microById.has(id))return;selected=id;selectedBairro=null;const m=microById.get(id);renderGroups();renderDetail(m);refreshStyles();if(fit)focusMicro(id);saveHash(id);hideSearch()}
+function focusMicro(id){if(!mapReady)return;const l=groupLayers.get(id);if(!l)return;const mobile=window.innerWidth<=700;map.fitBounds(l.getBounds(),mobile?{paddingTopLeft:[25,94],paddingBottomRight:[25,175],maxZoom:15,animate:true}:{padding:[75,80],maxZoom:15,animate:true})}
+function focusBairro(b){selectedBairro=b.nome;if(showBairros===false)setLayer('bairros',true);refreshStyles();if(window.innerWidth<=700){setDetailExpanded(false);$('detailIntro').textContent='Bairro: '+b.nome}if(!mapReady)return;const l=bairroLayers.get(b.nome);if(l){map.fitBounds(l.getBounds(),window.innerWidth<=700?{paddingTopLeft:[22,82],paddingBottomRight:[22,175],maxZoom:16,animate:true}:{padding:[75,55],maxZoom:16,animate:true});l.bringToFront();toast(b.nome+' — referência da micro '+b.micro+(b.dividido?' (bairro dividido)':''))}}
+function closeDetail(){selected=null;selectedBairro=null;$('detail').classList.remove('open','mobile-expanded');$('sidebarRoot').classList.remove('has-selection');document.documentElement.classList.remove('micro-active');$('toggleBairros').setAttribute('aria-expanded','false');$('toggleBairros').innerHTML='Ver bairros <span aria-hidden="true">⌄</span>';renderGroups();refreshStyles();saveHash(null)}
+function selectMicro(id,fit=true){if(!microById.has(id))return;selected=id;selectedBairro=null;const m=microById.get(id);$('detail').classList.remove('mobile-expanded');$('toggleBairros').setAttribute('aria-expanded','false');$('toggleBairros').innerHTML='Ver bairros <span aria-hidden="true">⌄</span>';$('sidebarRoot').classList.add('has-selection');$('sidebarRoot').classList.remove('expanded');document.documentElement.classList.add('micro-active');renderGroups();renderDetail(m);refreshStyles();if(fit)focusMicro(id);saveHash(id);hideSearch()}
 function renderDetail(m){
+ $('detail').style.setProperty('--micro-color',m.cor);
  $('detailHead').style.background=`linear-gradient(130deg,${m.cor},${darken(m.cor)})`;
  $('detailHead').style.color=contrast(m.cor);
  $('detailTitle').textContent='Micro '+m.id;
@@ -195,7 +234,7 @@ function initMap(){
  baseLight=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>',maxZoom:19}).addTo(map);
  baseSat=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'Tiles © Esri, Maxar, Earthstar Geographics',maxZoom:19});
  groupLayer=L.featureGroup();bairrosGroup=L.featureGroup();roadsGroup=L.featureGroup();
- for(const m of DATA.micros){const l=L.geoJSON({type:'Feature',geometry:m.geometry,properties:{}},{style:{fillColor:m.cor,color:'#223247',weight:2,fillOpacity:.47,opacity:.9}});l.bindTooltip('Micro '+m.id,{sticky:true,direction:'top',opacity:.96});l.on('click',()=>selectMicro(m.id,false));groupLayers.set(m.id,l);l.addTo(groupLayer)}groupLayer.addTo(map);
+ for(const m of DATA.micros){const l=L.geoJSON({type:'Feature',geometry:m.geometry,properties:{}},{style:{fillColor:m.cor,color:'#223247',weight:2,fillOpacity:.47,opacity:.9}});l.bindTooltip('Micro '+m.id,{sticky:true,direction:'top',opacity:.96});l.on('click',()=>selectMicro(m.id,true));groupLayers.set(m.id,l);l.addTo(groupLayer)}groupLayer.addTo(map);
  for(const b of DATA.bairros){const l=L.geoJSON({type:'Feature',geometry:b.geometry,properties:{}},{style:{color:'#667789',weight:.65,fillOpacity:0,opacity:.45,dashArray:'3,4'}});l.bindTooltip(b.nome+(b.dividido?' · bairro dividido':''),{sticky:true});l.on('click',()=>{selectMicro(b.micro,false);focusBairro(b)});bairroLayers.set(b.nome,l);l.addTo(bairrosGroup)}
  for(const r of DATA.corredores){const l=L.geoJSON({type:'Feature',geometry:r.geometry,properties:{}},{style:{color:'#126b87',weight:3.3,opacity:.8}});l.bindTooltip('Av. / via '+r.nome+' · corredor candidato',{sticky:true});roadLayers.set(r.nome,l);l.addTo(roadsGroup)}
  let bounds=groupLayer.getBounds();map.fitBounds(bounds,{padding:[45,42]});
@@ -208,6 +247,9 @@ $('search').addEventListener('keydown',e=>{if(e.key==='Escape')hideSearch();if(e
 document.addEventListener('keydown',e=>{if(e.key==='/'&&document.activeElement!==$('search')){e.preventDefault();$('search').focus()}if(e.key==='Escape'){$('layerPanel').classList.remove('open');hideSearch();if(selected)closeDetail()}});
 document.addEventListener('click',e=>{if(!e.target.closest('.findbox'))hideSearch();if(!e.target.closest('#layerPanel')&&!e.target.closest('#layerButton')){$('layerPanel').classList.remove('open');$('layerButton').setAttribute('aria-expanded','false')}});
 $('goHome').addEventListener('click',()=>{closeDetail();if(mapReady)map.fitBounds(groupLayer.getBounds(),{padding:[45,42]});toast('Visão geral das dez micros')});
+function setDetailExpanded(expand){const panel=$('detail');panel.classList.toggle('mobile-expanded',expand);$('toggleBairros').setAttribute('aria-expanded',String(expand));$('toggleBairros').innerHTML=expand?'Fechar bairros <span aria-hidden="true">⌃</span>':'Ver bairros <span aria-hidden="true">⌄</span>'}
+$('toggleBairros').addEventListener('click',()=>setDetailExpanded(!$('detail').classList.contains('mobile-expanded')));
+$('quickFocus').addEventListener('click',()=>{setDetailExpanded(false);if(selected)focusMicro(selected)});
 $('closeDetail').addEventListener('click',closeDetail);$('detailFocus').addEventListener('click',()=>{if(selected)focusMicro(selected)});$('copyDetails').addEventListener('click',copyDetails);
 $('locate').addEventListener('click',locate);$('share').addEventListener('click',share);
 $('layerButton').addEventListener('click',()=>{const open=$('layerPanel').classList.toggle('open');$('layerButton').setAttribute('aria-expanded',String(open))});
