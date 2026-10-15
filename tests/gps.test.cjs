@@ -55,6 +55,11 @@ function gpsHarness() {
       coords:{latitude:lat,longitude:lng,accuracy},timestamp:time
     }),
     mapStats:()=>({markerCount,panCount,viewCount,center}),
+    setOneShotFix:(lat,lng,accuracy=10)=>{
+      ctx.navigator.geolocation={
+        getCurrentPosition(success){success({coords:{latitude:lat,longitude:lng,accuracy},timestamp:Date.now()});}
+      };
+    },
     data:()=>raw?JSON.parse(raw):null
   };
 }
@@ -107,7 +112,7 @@ test('parado recebe atualização visual, mas não cria pontos falsos',()=>{
 test('sem novas posições painel avisa e desabilita marcação de vistoria',()=>{
   const h=gpsHarness();h.emit(-20,-44);
   h.api.setLastFixTime(Date.now()-40000);h.api.updateStatus();
-  assert.match(h.el('rondaGpsStatus').textContent,/sem atualização/);
+  assert.match(h.el('rondaGpsStatus').textContent,/nova leitura GPS/);
   assert.equal(h.el('rondaQuick').disabled,true);
   assert.match(h.el('rondaLastFix').textContent,/desatualizado/);
 });
@@ -126,4 +131,22 @@ test('marcação com localização antiga é recusada',()=>{
   h.api.setLastFixTime(Date.now()-45000);
   h.api.mark();
   assert.equal(h.api.get().current.visits.length,0);
+});
+
+test('vistoria com posição desatualizada solicita GPS novo antes de registrar',()=>{
+  const h=gpsHarness();h.emit(-20,-44);
+  h.api.setLastFixTime(Date.now()-45000);
+  h.setOneShotFix(-20,-44,9);
+  h.api.mark();
+  assert.equal(h.api.get().current.visits.length,1);
+  assert.equal(h.api.get().gpsState,'ok');
+  assert.ok(h.api.get().gpsStats.received>=2);
+});
+
+test('vistoria não é registrada se atualização de posição permanecer fora da micro',()=>{
+  const h=gpsHarness();
+  h.setOneShotFix(-19.2,-43.2,11);
+  h.api.mark();
+  assert.equal(h.api.get().current.visits.length,0);
+  assert.equal(h.api.get().gpsState,'fora');
 });
