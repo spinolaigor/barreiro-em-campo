@@ -145,7 +145,7 @@
   }
   function gpsError(err) {
     gpsState = err.code===1 ? 'negado' : 'sem_sinal';
-    if(err.code===1){ pause('Permissão de localização negada. Ative a localização nas permissões do site e toque Retomar.'); }
+    if(err.code===1){ panelOpen=true; pause('Permissão de localização negada. Ative a localização nas permissões do site e toque Retomar.'); }
     else inform('GPS sem sinal no momento. Continue com a tela aberta.','warning');
     updateStatus();
   }
@@ -221,7 +221,7 @@
     if(!p || now()-p.t>45000){inform('Aguardando uma posição recente e precisa do GPS para marcar.','warning');return;}
     if(!inside(p,microById.get(current.micro).geometry)){inform('Ponto fora da micro: não foi marcado.','warning');return;}
     const visit={lat:p.lat,lng:p.lng,t:now(),acc:p.acc,bairro:bairroAt(p)};
-    current.visits.push(visit);persist();drawTrack();updateStatus();
+    current.visits.push(visit);persist();drawTrack();updateStatus();\n    const quick=byId('rondaQuick'); if(quick && !quick.hidden){quick.textContent='✓ Vistoria '+current.visits.length+' marcada';setTimeout(()=>{if(quick)quick.textContent='✓ Marcar vistoria'},1800)}
     inform('Vistoria '+current.visits.length+' marcada em '+visit.bairro+'!');
     if(navigator.vibrate)try{navigator.vibrate(80)}catch(e){}
   }
@@ -238,7 +238,7 @@
       ...s.visits.map((p,i)=>({type:'Feature',properties:{tipo:'vistoria',numero:i+1,bairro:p.bairro,micro:s.micro,horario:new Date(p.t).toISOString()},geometry:{type:'Point',coordinates:[p.lng,p.lat]}}))];
       content=JSON.stringify({type:'FeatureCollection',metadata:meta,features},null,2);ext='geojson';mime='application/geo+json';
     }else if(format==='gpx'){
-      const trk=segments(s).map(part=>'<trkseg>'+part.map(p=>`<trkpt lat="${p.lat}" lon="${p.lng}"><time>${new Date(p.t).toISOString()}</time><hdop>${(p.acc/5).toFixed(1)}</hdop></trkpt>`).join('')+'</trkseg>').join('');
+      const trk=segments(s).map(part=>'<trkseg>'+part.map(p=>`<trkpt lat="${p.lat}" lon="${p.lng}"><time>${new Date(p.t).toISOString()}</time></trkpt>`).join('')+'</trkseg>').join('');
       const wpt=s.visits.map((p,i)=>`<wpt lat="${p.lat}" lon="${p.lng}"><name>Vistoria ${i+1}</name><desc>${esc(p.bairro)}</desc><time>${new Date(p.t).toISOString()}</time></wpt>`).join('');
       content=`<?xml version="1.0" encoding="UTF-8"?><gpx version="1.1" creator="Barreiro em Campo — Igor Spinola Mello" xmlns="http://www.topografix.com/GPX/1/1"><metadata><name>Ronda Micro ${s.micro}</name></metadata>${wpt}<trk><name>Ronda Micro ${s.micro}</name>${trk}</trk></gpx>`;
       mime='application/gpx+xml';ext='gpx';
