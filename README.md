@@ -1,6 +1,6 @@
 # Barreiro em Campo — mapa territorial público
 
-**Site planejado:** https://spinolaigor.github.io/barreiro-em-campo/
+**Site em operação (piloto):** https://spinolaigor.github.io/barreiro-em-campo/ · **Versão atual:** v0.4.0 — [histórico de versões](VERSOES.md)
 
 Projeto público de consulta cartográfica das **10 microrregiões da Regional Barreiro (Belo Horizonte)**, com busca por micro, bairro ou avenida, camadas territoriais e localização aproximada mediante permissão do navegador.
 
@@ -45,3 +45,9 @@ Os pontos de GPS entram no registro apenas **dentro da micro selecionada**. Leit
 **Resiliência:** a ronda é salva no navegador ao longo do percurso. Após recarregar a página, uma ronda interrompida pode ser retomada manualmente. Limpar o armazenamento do navegador pode apagar os registros não exportados. Para uso oficial e continuado, fazer pilotos em diferentes celulares e estabelecer orientações de privacidade e conservação dos dados.
 
 A análise de percentual de ruas percorridas ou consideradas vistoriadas **não está implementada**; isso exige associar GPS à malha viária e definir regras operacionais de aceitação da vistoria.
+
+## Versões e falhas de GPS (v0.4.0)
+
+Consulte [VERSOES.md](VERSOES.md) para saber o que mudou no aplicativo e comparar versões anteriores pelo histórico de commits. O mapa registra eventos de pausa, falhas e intervalos longos sem pontos de GPS e marca **o último ponto válido antes de uma interrupção** em laranja. Esse marcador **não representa necessariamente o local exato da perda do GPS**.
+
+O histórico de versões do site **não é backup das rondas**. As rondas permanecem neste navegador até serem exportadas; salvar arquivos GPX, GeoJSON ou CSV ao terminar cada ronda é essencial para evitar perda de dados. Arquivos de trajetória incluem coordenadas e horários, portanto devem ser guardados e compartilhados somente com as pessoas autorizadas.
