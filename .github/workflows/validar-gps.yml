@@ -1,0 +1,29 @@
+name: Validar alterações de GPS
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches:
+      - 'fix/gps-*'
+permissions:
+  contents: read
+jobs:
+  testes:
+    name: Código e regressões
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar o repositório
+        uses: actions/checkout@v4
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validar sintaxe do JavaScript
+        run: node --check ronda.js
+      - name: Verificar funcionalidades e registros
+        run: node --test tests/*.test.cjs
+      - name: Confirmar integridade dos arquivos públicos
+        run: |
+          test -s index.html
+          test -s micros.geojson
+          test -s ronda.css

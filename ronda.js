@@ -8,7 +8,9 @@
   if (!bridge || !bridge.DATA || !Array.isArray(bridge.DATA.micros)) return;
 
   const KEY = 'barreiro.rondas.v1'; // Compatível com rondas salvas anteriormente
-  const APP_VERSION = '0.4.1';
+  const APP_VERSION = '0.4.2-beta';
+  const GPS_FRESH_MS = 30000; // sinal sem atualizacao por 30 s exige aviso
+  const GPS_DISPLAY_MAX_ACC = 250; // apenas exibicao aproximada, nao entra no rastro
   const COLORS = { navy: '#142c44', blue: '#147baf', green: '#138065' };
   const microById = new Map(bridge.DATA.micros.map(m => [String(m.id), m]));
   const byId = id => document.getElementById(id);
@@ -51,6 +53,8 @@
 
   let history = [], current = null, watchId = null, wake = null, lineLayer = null,
       markerLayer = null, lastGps = null, gpsState = 'desligado', panelOpen = false,
+      liveMarker = null, liveAccuracy = null, followGps = true, followInitialized = false, markRefreshing = false,
+      gpsStats = {received:0,accepted:0,ignored:0,startedAt:0,lastResult:'Aguardando GPS'},
       step = 'home', storageOk = true, renderTick = null, outsideShownAt=0,
       loadFailed = false, storedRaw = null, storageMessage = '';
 
@@ -142,6 +146,38 @@
   }
   function markNewSegment() { if(current) current.segment = (current.segment || 0) + 1; }
   function mapReady() { return !!getMap() && !!window.L; }
+  function freshFix(p) {return !!p && Number.isFinite(p.t) && p.t<=now()+5000 && now()-p.t<=GPS_FRESH_MS;}
+  function lastFixAge() {return lastGps ? Math.max(0,now()-lastGps.t) : null;}
+  function resetLivePosition(){
+    if(mapReady()){
+      const m=getMap();
+      if(liveMarker)m.removeLayer(liveMarker);
+      if(liveAccuracy)m.removeLayer(liveAccuracy);
+    }
+    liveMarker=null;liveAccuracy=null;followInitialized=false;
+  }
+  function updateFollowUI(){
+    const btn=byId('rondaFollow');
+    if(!btn)return;
+    btn.hidden=!current || current.status!=='recording' || panelOpen;
+    btn.textContent=followGps?'◎ Seguindo GPS':'◎ Seguir GPS';
+    btn.setAttribute('aria-pressed',String(followGps));
+  }
+  function drawLivePosition(p){
+    if(!mapReady() || !Number.isFinite(p.lat) || !Number.isFinite(p.lng) ||
+       !Number.isFinite(p.acc) || p.acc<0 || p.acc>GPS_DISPLAY_MAX_ACC || !freshFix(p))return;
+    const m=getMap(),center=[p.lat,p.lng],good=p.acc<=75;
+    const markerStyle={radius:8,color:'#fff',weight:3,fillColor:good?'#147baf':'#d4912a',fillOpacity:1,interactive:false};
+    const ringStyle={radius:Math.max(10,p.acc),color:good?'#147baf':'#d4912a',weight:1,fillOpacity:.10,interactive:false};
+    if(!liveMarker)liveMarker=L.circleMarker(center,markerStyle).addTo(m);
+    else {liveMarker.setLatLng(center);liveMarker.setStyle(markerStyle);}
+    if(!liveAccuracy)liveAccuracy=L.circle(center,ringStyle).addTo(m);
+    else {liveAccuracy.setLatLng(center);liveAccuracy.setRadius(ringStyle.radius);liveAccuracy.setStyle(ringStyle);}
+    if(followGps){
+      if(!followInitialized){m.setView(center,Math.max(15,m.getZoom()),{animate:false});followInitialized=true;}
+      else if(haversine({lat:m.getCenter().lat,lng:m.getCenter().lng},p)>35)m.panTo(center,{animate:false});
+    }
+  }
   function removeTrack() {
     if(!mapReady()) return;
     const map=getMap();
@@ -180,18 +216,18 @@
         outsideShownAt=now();
         inform('Fora da Micro '+current.micro+'. Esse trecho não será registrado.','warning');
       }
-      if(!fromReplay){current.outside=(current.outside||0)+1;if(!current.outsideActive){recordGap('fora','Saída da Micro '+current.micro,p.t);current.outsideActive=true;}markNewSegment();}
+      if(!fromReplay){gpsStats.ignored++;gpsStats.lastResult='Fora da micro — posição exibida, trecho não gravado';current.outside=(current.outside||0)+1;if(!current.outsideActive){recordGap('fora','Saída da Micro '+current.micro,p.t);current.outsideActive=true;}markNewSegment();}
       gpsState='fora'; return false;
     }
     current.outsideActive=false;
     const prev=current.points.at(-1);
     if(prev) {
       const seconds=Math.max(0.001,(p.t-prev.t)/1000), dist=haversine(p,prev);
-      if(seconds<2 && dist<7) {gpsState='ok';return false;}
+      if(seconds<2 && dist<7) {gpsState='ok';if(!fromReplay){gpsStats.ignored++;gpsStats.lastResult='Pouco deslocamento: leitura recebida, sem novo ponto';}return false;}
       // Localizacoes impossiveis sao descartadas, como saltos de GPS.
-      if(dist/seconds>40 && dist>65) {gpsState='impreciso';if(!fromReplay)recordGap('salto','Leitura de GPS com deslocamento improvável',p.t);markNewSegment();return false;}
+      if(dist/seconds>40 && dist>65) {gpsState='impreciso';if(!fromReplay){gpsStats.ignored++;gpsStats.lastResult='Salto improvável descartado';recordGap('salto','Leitura de GPS com deslocamento improvável',p.t);}markNewSegment();return false;}
       if(seconds>75){if(!fromReplay)recordGap('sem_registro','Intervalo de '+Math.round(seconds)+' s sem pontos válidos',p.t);markNewSegment();}
-      if(dist<9 && seconds<20) {gpsState='ok';return false;}
+      if(dist<9 && seconds<20) {gpsState='ok';if(!fromReplay){gpsStats.ignored++;gpsStats.lastResult='Pouco deslocamento: leitura recebida, sem novo ponto';}return false;}
       if(prev.seg===current.segment && seconds<=75)current.meters=(current.meters||0)+dist;
     }
     const sample={lat:+p.lat.toFixed(7),lng:+p.lng.toFixed(7),acc:Math.round(p.acc),t:p.t,seg:current.segment};
@@ -200,6 +236,7 @@
     current.lastLocation=sample;
     gpsState='ok';
     if(!fromReplay){
+      gpsStats.accepted++;gpsStats.lastResult='Novo ponto salvo no rastro';
       persist();
       drawTrack();
     }
@@ -207,17 +244,34 @@
   }
   function acceptGps(position) {
     if(!current || current.status!=='recording')return;
-    const {latitude:lat,longitude:lng,accuracy:acc}=position.coords;
-    lastGps={lat,lng,acc,t:position.timestamp || now()};
-    if(!Number.isFinite(acc) || acc>75 || !Number.isFinite(lat) || !Number.isFinite(lng)){
-      gpsState='impreciso';if(!current.impreciseActive){recordGap('impreciso','Sinal de GPS impreciso',position.timestamp||now());current.impreciseActive=true;markNewSegment();}updateStatus();return;
+    gpsStats.received++;
+    const {latitude:lat,longitude:lng,accuracy:acc}=position.coords||{};
+    const p={lat,lng,acc,t:position.timestamp||now()};
+    if(!Number.isFinite(lat)||!Number.isFinite(lng)||Math.abs(lat)>90||Math.abs(lng)>180||
+       !Number.isFinite(acc)||acc<0){
+      gpsStats.ignored++;gpsStats.lastResult='Coordenadas inválidas enviadas pelo aparelho';
+      gpsState='impreciso';updateStatus();return;
+    }
+    if(!freshFix(p)){
+      gpsStats.ignored++;gpsStats.lastResult='Leitura GPS antiga descartada';
+      gpsState='sem_sinal';updateStatus();return;
+    }
+    // Posição em tempo real é diferente do rastro: exibida mesmo fora da micro.
+    lastGps=p;
+    drawLivePosition(p);
+    if(acc>75){
+      gpsStats.ignored++;gpsStats.lastResult='Precisão de '+Math.round(acc)+' m: posição aproximada, sem gravar rastro';
+      gpsState='impreciso';
+      if(!current.impreciseActive){recordGap('impreciso','Sinal de GPS impreciso',p.t);current.impreciseActive=true;markNewSegment();}
+      updateStatus();return;
     }
     current.impreciseActive=false;
-    addPoint({lat,lng,acc,t:position.timestamp || now()});
+    addPoint(p);
     updateStatus();
   }
   function gpsError(err) {
     gpsState = err.code===1 ? 'negado' : 'sem_sinal';
+    gpsStats.lastResult=err.code===1?'Permissão de localização negada':'GPS retornou erro '+String(err.code||'desconhecido');
     recordGap(gpsState,err.code===1?'Permissão de localização negada':'Interrupção no sinal do GPS');markNewSegment();
     if(err.code===1){ panelOpen=true; pause('Permissão de localização negada. Ative a localização nas permissões do site e toque Retomar.'); }
     else inform('GPS sem sinal no momento. Continue com a tela aberta.','warning');
@@ -233,7 +287,7 @@
   async function releaseScreen(){try{if(wake)await wake.release()}catch(e){}wake=null;}
   function startWatch() {
     if(watchId!==null)navigator.geolocation.clearWatch(watchId);
-    gpsState='aguardando';
+    gpsState='aguardando';gpsStats.startedAt=now();
     watchId=navigator.geolocation.watchPosition(acceptGps,gpsError,{enableHighAccuracy:true,timeout:20000,maximumAge:0});
     screenOn();
   }
@@ -264,7 +318,7 @@
     if(current && ['paused','recording'].includes(current.status)) {inform('Finalize a ronda atual antes de começar outra.','warning');return;}
     current={id:sid(),micro,status:'recording',startedAt:now(),resumedAt:now(),elapsedMs:0,lastPauseAt:null,
       endedAt:null,points:[],visits:[],gaps:[],meters:0,segment:0,outside:0,lastLocation:null};
-    lastGps=null;gpsState='aguardando';
+    lastGps=null;gpsState='aguardando';followGps=true;markRefreshing=false;resetLivePosition();gpsStats={received:0,accepted:0,ignored:0,startedAt:now(),lastResult:'Aguardando GPS'};
     chooseMicro(micro); if(!persist())return; drawTrack();
     startWatch(); panelOpen=false;step='home';drawUI();
     inform('Ronda iniciada! Aguarde o sinal de GPS e mantenha esta página aberta.');
@@ -273,7 +327,7 @@
     if(!current || current.status!=='recording')return;
     current.elapsedMs = elapsed(current);
     current.status='paused';current.lastPauseAt=now();current.resumedAt=null;
-    markNewSegment(); stopWatch(); gpsState='pausado';recordGap('pausa',reason);if(storageOk)persist();drawUI();inform(reason,'warning');
+    markRefreshing=false;markNewSegment(); stopWatch(); gpsState='pausado';recordGap('pausa',reason);if(storageOk)persist();drawUI();inform(reason,'warning');
   }
   function resume() {
     if(!storageOk){inform(storageMessage,'warning');return;}
@@ -289,13 +343,38 @@
     const nextHistory=[completed,...history];
     if(!persist(null,nextHistory))return;
     stopWatch();history=nextHistory;
-    current=null; lastGps=null;gpsState='desligado';removeTrack();
+    current=null; lastGps=null;gpsState='desligado';markRefreshing=false;removeTrack();resetLivePosition();
     panelOpen=true;step='history';drawUI();inform('Ronda finalizada e salva neste navegador. Baixe o backup para guardar uma cópia fora dele.');
   }
   function mark() {
     if(!current || current.status!=='recording'){inform('Inicie ou retome a ronda antes de marcar uma vistoria.','warning');return;}
-    const p=lastGps||current.lastLocation;
-    if(!p || now()-p.t>45000 || gpsState!=='ok'){inform('Aguardando uma posição recente e válida do GPS para marcar.','warning');return;}
+    if(markRefreshing){inform('Atualizando sua posição, aguarde…');return;}
+    // Parado ou sem leituras recentes? Solicitar um GPS novo antes de marcar.
+    // Nunca utilizar uma coordenada antiga para registrar uma vistoria.
+    if(!freshFix(lastGps) || gpsState!=='ok'){
+      if(!navigator.geolocation?.getCurrentPosition){
+        inform('GPS sem posição recente. Aguarde uma atualização para marcar.','warning');return;
+      }
+      markRefreshing=true;
+      const sessionId=current.id;
+      inform('Conferindo sua posição atual para marcar a vistoria…');
+      updateStatus();
+      navigator.geolocation.getCurrentPosition(position=>{
+        markRefreshing=false;
+        if(current?.id!==sessionId || current.status!=='recording')return;
+        acceptGps(position);
+        if(gpsState==='ok' && freshFix(lastGps)) mark();
+        else inform('GPS ainda sem posição suficientemente precisa dentro da micro. Tente novamente.','warning');
+        updateStatus();
+      },err=>{
+        markRefreshing=false;
+        if(current?.id!==sessionId || current.status!=='recording')return;
+        gpsError(err);
+        inform('Não foi possível atualizar sua posição. Verifique a permissão do GPS.','warning');
+      },{enableHighAccuracy:true,timeout:15000,maximumAge:0});
+      return;
+    }
+    const p=lastGps;
     if(!inside(p,microById.get(current.micro).geometry)){inform('Ponto fora da micro: não foi marcado.','warning');return;}
     const visit={lat:p.lat,lng:p.lng,t:now(),acc:p.acc,bairro:bairroAt(p)};
     current.visits.push(visit);if(!persist())return;drawTrack();updateStatus();
@@ -345,7 +424,8 @@
       <button type="button" id="rondaFab" class="ronda-fab" aria-expanded="false" aria-controls="rondaPanel">
         <span class="ronda-fab-icon" aria-hidden="true">◎</span><span id="rondaFabLabel">Ronda GPS</span>
       </button>
-      <button type="button" id="rondaQuick" class="ronda-quick" hidden>✓ Marcar vistoria</button>
+      <button type="button" id="rondaFollow" class="ronda-follow" aria-pressed="true" hidden>◎ Seguindo GPS</button>
+       <button type="button" id="rondaQuick" class="ronda-quick" hidden>✓ Marcar vistoria</button>
       <section id="rondaPanel" class="ronda-panel" role="region" aria-label="Controle da ronda" hidden>
         <div class="ronda-heading"><span class="ronda-kicker">BARREIRO EM CAMPO</span><button type="button" id="rondaHide" aria-label="Fechar painel da ronda" class="ronda-x">×</button></div>
         <div id="rondaContent"></div>
@@ -356,6 +436,12 @@
     byId('rondaFab').addEventListener('click',()=>{panelOpen=!panelOpen;if(panelOpen && !current)step='home';drawUI()});
     byId('rondaHide').addEventListener('click',()=>{panelOpen=false;drawUI()});
     byId('rondaQuick').addEventListener('click',mark);
+    byId('rondaFollow').addEventListener('click',()=>{
+      followGps=!followGps;followInitialized=false;
+      if(followGps && freshFix(lastGps))drawLivePosition(lastGps);
+      updateFollowUI();
+    });
+    getMap()?.on('dragstart',()=>{if(current?.status==='recording'){followGps=false;updateFollowUI();}});
     byId('rondaContent').addEventListener('click',event=>{
       const b=event.target.closest('button[data-ronda]');if(!b)return;
       switch(b.dataset.ronda){
@@ -366,7 +452,7 @@
         case 'home':step='home';drawUI();break;
         case 'export':{const s=history.find(x=>x.id===b.dataset.id)|| (current?.id===b.dataset.id?current:null);exportFile(s,b.dataset.format);break;}
         case 'delete':erase(b.dataset.id);break;
-        case 'focus': if(current) {bridge.selectMicro(current.micro);byId('detail')?.classList.remove('open');}panelOpen=false;drawUI();break;
+        case 'focus': if(current) {followGps=false;followInitialized=false;bridge.selectMicro(current.micro);byId('detail')?.classList.remove('open');}panelOpen=false;drawUI();break;
       }
     });
     byId('rondaContent').addEventListener('change',e=>{if(e.target.id==='rondaMicro'){chooseMicro(e.target.value)}});
@@ -381,15 +467,20 @@
     fab.classList.toggle('is-paused',active&&!recording);
     byId('rondaFabLabel').textContent=active ? (recording?'● Gravando · Micro '+current.micro:'Ⅱ Pausada · Micro '+current.micro) : 'Ronda GPS';
     fab.setAttribute('aria-expanded',String(panelOpen));
+    updateFollowUI();
     fab.setAttribute('aria-label',recording?'Ronda em andamento. Abrir controles':active?'Ronda pausada. Abrir controles':'Abrir modo de ronda GPS');
     quick.hidden=!recording || panelOpen;
-    quick.disabled=!recording || gpsState!=='ok' || !lastGps || now()-lastGps.t>45000;
+    quick.disabled=!recording || !storageOk || markRefreshing;
     panel.hidden=!panelOpen;
     if(!panelOpen)return;
     const content=byId('rondaContent');
     if(active){
       content.innerHTML=`<h2 class="ronda-title">${recording?'Ronda em andamento':'Ronda pausada'}</h2>
       <div class="ronda-progress"><span class="ronda-status-dot ${recording?'pulse':'paused'}"></span><span id="rondaGpsStatus">${recording?'Aguardando GPS…':'Pausada'}</span></div>
+       <p class="ronda-lastfix" id="rondaLastFix">Aguardando primeira leitura do aparelho.</p>
+       <details class="ronda-diagnostico"><summary>Diagnóstico do GPS</summary>
+       <div id="rondaGpsDiagnostics">Aguardando dados do aparelho.</div>
+       <p>Localização mostrada no mapa não é necessariamente um ponto salvo. O rastro azul é gravado somente dentro da micro, com precisão adequada. Se a tela bloquear, o navegador pode pausar.</p></details>
       <div class="ronda-stats"><div><strong id="rondaDistance">${formatKm(current.meters||0)}</strong><small>trajeto</small></div><div><strong id="rondaTime">${hhmm(elapsed(current))}</strong><small>tempo</small></div><div><strong id="rondaVisits">${current.visits.length}</strong><small>marcações</small></div></div>
        <div class="ronda-gaps"><span id="rondaGapIcon">${(current.gaps||[]).length?'⚠':'✓'}</span> <strong id="rondaGapCount">${(current.gaps||[]).length}</strong> interrupção(ões) ou pausa(s) registrada(s). Pontos laranja mostram o último GPS válido.</div>
       <div class="ronda-actions-stack">${recording?button('mark','✓ Marcar vistoria','primary'):button('resume','▶ Retomar ronda','primary')}
@@ -420,15 +511,26 @@
     if(t)t.textContent=hhmm(elapsed(current));
     if(v)v.textContent=String(current.visits.length);
     if(gaps){const n=(current.gaps||[]).length;gaps.textContent=String(n);gaps.closest('.ronda-gaps')?.classList.toggle('clear',n===0);const icon=byId('rondaGapIcon');if(icon)icon.textContent=n?'⚠':'✓';}
-    if(quick)quick.disabled=current.status!=='recording'||!storageOk||gpsState!=='ok'||!lastGps || now()-lastGps.t>45000;
+    if(quick)quick.disabled=current.status!=='recording'||!storageOk||markRefreshing;
     if(status){
-      const texts={aguardando:'Procurando sinal de GPS…',ok:'GPS ativo · '+Math.round(lastGps?.acc||current.lastLocation?.acc||0)+' m de precisão',impreciso:'GPS impreciso. Aguarde…',fora:'Fora da micro — rastro não salvo',sem_sinal:'Sem sinal de GPS',negado:'Permissão do GPS negada',pausado:'Pausada'};
-      status.textContent=current.status==='paused'?'Pausada':(texts[gpsState]||'Procurando sinal…');
+      const age=lastFixAge(),watchAge=Math.max(0,now()-(gpsStats.startedAt||now()));
+      const stale=current.status==='recording' && ((age!==null&&age>GPS_FRESH_MS)||(age===null&&watchAge>GPS_FRESH_MS));
+      const texts={aguardando:'Procurando sinal de GPS…',ok:'GPS ativo · '+Math.round(lastGps?.acc||current.lastLocation?.acc||0)+' m de precisão',impreciso:'GPS impreciso: rastro não atualizado',fora:'Fora da micro — posição visível, sem rastro',sem_sinal:'Sem sinal de GPS',negado:'Permissão do GPS negada',pausado:'Pausada'};
+      status.textContent=current.status==='paused'?'Ronda pausada':stale?'Sem nova leitura GPS há '+Math.floor((age??watchAge)/1000)+' s':(texts[gpsState]||'Procurando sinal…');
+      status.closest('.ronda-progress')?.classList.toggle('ronda-sinal-atrasado',stale);
+      const note=byId('rondaLastFix');
+      if(note)note.textContent=age===null?'Nenhuma posição recebida desde o início desta etapa.':
+        'Última leitura: '+new Date(lastGps.t).toLocaleTimeString('pt-BR')+' · precisão ±'+Math.round(lastGps.acc)+' m'+
+        (stale?' · sinal desatualizado':'');
+      const diag=byId('rondaGpsDiagnostics');
+      if(diag)diag.textContent='Leituras recebidas: '+gpsStats.received+' · pontos gravados: '+gpsStats.accepted+
+        ' · descartadas/sem deslocamento: '+gpsStats.ignored+'. Último evento: '+gpsStats.lastResult+'.';
     }
   }
   function startApp(){
     load();buildUI();if(!storageOk)panelOpen=true;drawUI();
     if(current && current.status==='paused'){
+      followGps=false;
       if(storageOk)persist();
       panelOpen=true;drawUI();drawTrack();inform('Ronda recuperada e pausada. Toque Retomar quando estiver pronto.');
     }

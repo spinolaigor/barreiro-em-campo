@@ -1,9 +1,9 @@
 {
   "name": "Barreiro em Campo",
-  "version": "0.4.1",
-  "stage": "piloto",
+  "version": "0.4.2-beta",
+  "stage": "branch-de-teste-nao-publicada",
   "release_date": "2026-10-15",
-  "description": "Preservação integral das rondas, recuperação conservadora e backup completo",
+  "description": "Posição GPS ao vivo, acompanhamento opcional, diagnóstico de leituras e vistoria com atualização sob demanda",
   "author": "Igor Spínola Mello",
-  "note": "Metadados de versão do aplicativo; rondas individuais são armazenadas somente no navegador."
+  "note": "Alterações disponíveis somente em fix/gps-diagnostico-v0.4.2. Site público main permanece na versão v0.4.1; dados da ronda continuam locais."
 }
