@@ -221,7 +221,8 @@
     if(!p || now()-p.t>45000){inform('Aguardando uma posição recente e precisa do GPS para marcar.','warning');return;}
     if(!inside(p,microById.get(current.micro).geometry)){inform('Ponto fora da micro: não foi marcado.','warning');return;}
     const visit={lat:p.lat,lng:p.lng,t:now(),acc:p.acc,bairro:bairroAt(p)};
-    current.visits.push(visit);persist();drawTrack();updateStatus();\n    const quick=byId('rondaQuick'); if(quick && !quick.hidden){quick.textContent='✓ Vistoria '+current.visits.length+' marcada';setTimeout(()=>{if(quick)quick.textContent='✓ Marcar vistoria'},1800)}
+    current.visits.push(visit);persist();drawTrack();updateStatus();
+    const quick=byId('rondaQuick'); if(quick && !quick.hidden){quick.textContent='✓ Vistoria '+current.visits.length+' marcada';setTimeout(()=>{if(quick)quick.textContent='✓ Marcar vistoria'},1800)}
     inform('Vistoria '+current.visits.length+' marcada em '+visit.bairro+'!');
     if(navigator.vibrate)try{navigator.vibrate(80)}catch(e){}
   }
