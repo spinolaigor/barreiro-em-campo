@@ -132,11 +132,11 @@
     const prev=current.points.at(-1);
     if(prev) {
       const seconds=Math.max(0.001,(p.t-prev.t)/1000), dist=haversine(p,prev);
-      if(seconds<2 && dist<7) return false;
+      if(seconds<2 && dist<7) {gpsState='ok';return false;}
       // Localizacoes impossiveis sao descartadas, como saltos de GPS.
       if(dist/seconds>40 && dist>65) {gpsState='impreciso';if(!fromReplay)recordGap('salto','Leitura de GPS com deslocamento improvável',p.t);markNewSegment();return false;}
       if(seconds>75){if(!fromReplay)recordGap('sem_registro','Intervalo de '+Math.round(seconds)+' s sem pontos válidos',p.t);markNewSegment();}
-      if(dist<9 && seconds<20) return false;
+      if(dist<9 && seconds<20) {gpsState='ok';return false;}
       if(prev.seg===current.segment && seconds<=75)current.meters=(current.meters||0)+dist;
     }
     const sample={lat:+p.lat.toFixed(7),lng:+p.lng.toFixed(7),acc:Math.round(p.acc),t:p.t,seg:current.segment};
@@ -237,7 +237,7 @@
   }
   function mark() {
     if(!current || current.status!=='recording'){inform('Inicie ou retome a ronda antes de marcar uma vistoria.','warning');return;}
-    const p=current.lastLocation;
+    const p=lastGps||current.lastLocation;
     if(!p || now()-p.t>45000 || gpsState!=='ok'){inform('Aguardando uma posição recente e válida do GPS para marcar.','warning');return;}
     if(!inside(p,microById.get(current.micro).geometry)){inform('Ponto fora da micro: não foi marcado.','warning');return;}
     const visit={lat:p.lat,lng:p.lng,t:now(),acc:p.acc,bairro:bairroAt(p)};
@@ -324,7 +324,7 @@
     fab.setAttribute('aria-expanded',String(panelOpen));
     fab.setAttribute('aria-label',recording?'Ronda em andamento. Abrir controles':active?'Ronda pausada. Abrir controles':'Abrir modo de ronda GPS');
     quick.hidden=!recording || panelOpen;
-    quick.disabled=!recording || gpsState!=='ok' || !current.lastLocation || now()-current.lastLocation.t>45000;
+    quick.disabled=!recording || gpsState!=='ok' || !lastGps || now()-lastGps.t>45000;
     panel.hidden=!panelOpen;
     if(!panelOpen)return;
     const content=byId('rondaContent');
@@ -359,7 +359,7 @@
     if(t)t.textContent=hhmm(elapsed(current));
     if(v)v.textContent=String(current.visits.length);
     if(gaps){const n=(current.gaps||[]).length;gaps.textContent=String(n);gaps.closest('.ronda-gaps')?.classList.toggle('clear',n===0);const icon=byId('rondaGapIcon');if(icon)icon.textContent=n?'⚠':'✓';}
-    if(quick && current.status==='recording')quick.disabled=gpsState!=='ok'||!current.lastLocation || now()-current.lastLocation.t>45000;
+    if(quick && current.status==='recording')quick.disabled=gpsState!=='ok'||!lastGps || now()-lastGps.t>45000;
     if(status){
       const texts={aguardando:'Procurando sinal de GPS…',ok:'GPS ativo · '+Math.round(lastGps?.acc||current.lastLocation?.acc||0)+' m de precisão',impreciso:'GPS impreciso. Aguarde…',fora:'Fora da micro — rastro não salvo',sem_sinal:'Sem sinal de GPS',negado:'Permissão do GPS negada',pausado:'Pausada'};
       status.textContent=current.status==='paused'?'Pausada':(texts[gpsState]||'Procurando sinal…');
