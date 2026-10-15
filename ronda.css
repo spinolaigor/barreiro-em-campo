@@ -1,0 +1,38 @@
+/* Barreiro em Campo — Ronda GPS. Controles compactos de campo. */
+.ronda-root{position:absolute;inset:0;z-index:820;pointer-events:none;font-family:inherit;color:#19334c}
+.ronda-root button,.ronda-root select{font-family:inherit}
+.ronda-fab{pointer-events:auto;position:absolute;top:76px;right:18px;background:#183d59;color:#fff;border:1px solid #fff5;border-radius:999px;display:flex;align-items:center;gap:8px;min-height:43px;padding:9px 16px;font-weight:800;font-size:13px;box-shadow:0 6px 24px #14294245;cursor:pointer;white-space:nowrap}
+.ronda-fab-icon{font-size:24px;line-height:18px}.ronda-fab.is-recording{background:#11745c}.ronda-fab.is-paused{background:#b16b12}
+.ronda-panel{pointer-events:auto;position:absolute;right:18px;top:130px;width:min(345px,calc(100vw - 32px));max-height:calc(100dvh - 165px);overflow-y:auto;overscroll-behavior:contain;background:#fff;border:1px solid #dde8ee;border-radius:19px;box-shadow:0 17px 55px #11294245;padding:16px;scrollbar-width:thin}
+.ronda-panel[hidden],.ronda-quick[hidden]{display:none!important}
+.ronda-heading{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px}.ronda-kicker{font-size:10px;font-weight:900;letter-spacing:.12em;color:#718297}
+.ronda-x{width:32px;height:32px;border:0;border-radius:9px;background:#eef3f6;color:#314d60;font-weight:750;font-size:21px;display:grid;place-items:center}
+.ronda-title{margin:0 0 8px;font-size:21px;line-height:1.17;font-weight:900;letter-spacing:-.4px;color:#153248}
+.ronda-help,.ronda-caution{margin:8px 0 11px;font-size:12px;line-height:1.5;color:#677a8e}.ronda-caution{color:#7b8895;font-size:11px;margin-top:11px}
+.ronda-label{display:block;margin-bottom:6px;font-size:12px;font-weight:800;color:#354c61}.ronda-select{display:block;width:100%;border:1px solid #c8d8e4;border-radius:11px;min-height:46px;padding:10px 13px;background:#fff;color:#233a51;font-weight:750;font-size:14px;margin-bottom:12px}
+.ronda-btn{border:0;border-radius:12px;min-height:44px;padding:12px;font-size:13px;font-weight:800;cursor:pointer}.ronda-btn.primary{width:100%;background:#117a62;color:white;font-size:14px;min-height:48px;box-shadow:0 3px 12px #14664b23}
+.ronda-btn.muted{background:#edf4f7;color:#25465c}.ronda-btn.outline{background:#fff;border:1px solid #c9d8e2;color:#355065}
+.ronda-btn.text{width:100%;background:transparent;color:#2c6380;text-align:center;font-size:12px;margin:5px 0;padding:7px;min-height:30px}
+.ronda-btn.mini{min-height:33px;padding:7px 10px;border:1px solid #d5e1e9;background:#f8fafc;color:#234963;font-size:11px;border-radius:9px}.ronda-btn.danger{color:#a14a46}
+.ronda-btn:focus-visible,.ronda-fab:focus-visible,.ronda-quick:focus-visible{outline:3px solid #7cc6ee;outline-offset:3px}
+.ronda-btn:disabled,.ronda-quick:disabled{opacity:.54;cursor:not-allowed}
+.ronda-actions-stack{display:grid;gap:8px}.ronda-side-by-side{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.ronda-progress{display:flex;gap:7px;align-items:center;font-size:11px;color:#617789;min-height:25px;margin:3px 0 9px}
+.ronda-status-dot{display:block;width:8px;height:8px;border-radius:50%;background:#a9b7c4;flex:0 0 auto}.ronda-status-dot.pulse{background:#21ab78;box-shadow:0 0 0 4px #21ab7825}.ronda-status-dot.paused{background:#d58b2d}
+.ronda-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin:8px 0 13px}
+.ronda-stats>div{text-align:center;padding:10px 2px;background:#f2f6f9;border-radius:12px}.ronda-stats strong{display:block;font-size:18px;line-height:1.2;font-weight:850;white-space:nowrap;color:#1a3a51}.ronda-stats small{font-size:10px;color:#718497}
+.ronda-message{margin:11px 0 4px;font-size:12px;line-height:1.4;color:#196b51}.ronda-message:empty{display:none}.ronda-message[data-type=warning]{color:#a56116}
+.ronda-privacy{margin-top:9px;padding-top:9px;border-top:1px solid #e7eef2;font-size:10px;color:#8293a2;line-height:1.4}
+.ronda-row{display:flex;justify-content:space-between;align-items:center;gap:5px}.ronda-history-entry{padding:12px;border:1px solid #e3ebf0;border-radius:12px;margin:8px 0}.ronda-history-entry>strong,.ronda-history-entry>small{display:block;line-height:1.6}.ronda-history-entry>strong{font-size:12px}.ronda-history-entry>small{font-size:11px;color:#64778b}.ronda-exports{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}.ronda-empty{font-size:12px;color:#6f8595}
+.ronda-quick{pointer-events:auto;position:absolute;bottom:24px;left:50%;transform:translateX(-50%);z-index:4;border:2px solid white;background:#117a62;color:white;font-weight:850;font-size:13px;border-radius:999px;padding:11px 18px;min-height:49px;min-width:176px;box-shadow:0 8px 25px #172a4260;white-space:nowrap}
+@media(max-width:700px){
+ .ronda-root{z-index:700}
+ .ronda-fab{right:12px;top:77px;min-height:42px;font-size:12px;padding:8px 13px}
+ .ronda-panel{left:12px;right:12px;width:auto;top:auto;bottom:195px;max-height:min(48dvh,390px);border-radius:17px;padding:14px;box-shadow:0 12px 40px #132b3b43}
+ .ronda-title{font-size:18px}.ronda-quick{bottom:194px;left:50%;padding:11px 16px}
+ .sidebar.expanded~.map-area .ronda-quick{bottom:calc(min(70dvh,600px) + 10px)}
+ .sidebar.expanded~.map-area .ronda-panel{bottom:calc(min(70dvh,600px) + 10px)}
+ .ronda-panel .ronda-privacy{font-size:10px}
+}
+@media(max-width:390px){.ronda-panel{bottom:185px;max-height:min(46dvh,340px)}.ronda-fab{top:72px;right:8px}.ronda-quick{bottom:183px}}
+@media(prefers-reduced-motion:reduce){.ronda-status-dot.pulse{box-shadow:none}}
