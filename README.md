@@ -27,3 +27,21 @@ O fluxo `.github/workflows/pages.yml` já está criado para publicar automaticam
 **Compartilhamento:** após a publicação, um link individual para uma micro pode ser enviado com `#micro=01`, substituindo o número.
 
 Para visualizar as geometrias no aplicativo Google Maps, é necessário importá-las separadamente no Google My Maps; o site não oferece navegação por voz.
+
+## Modo Ronda GPS — versão experimental
+
+O mapa conta com um botão **Ronda GPS**, disponível no celular. A experiência foi desenhada para três ações simples:
+
+1. **Iniciar ronda** — selecionar a micro e autorizar o GPS.
+2. **Marcar vistoria** — registrar com um toque um ponto efetivamente inspecionado (a posição precisa estar recente e dentro da micro escolhida).
+3. **Finalizar** — pausar e retomar quando necessário; ao terminar, salvar o percurso e exportar em **GPX, GeoJSON ou CSV**.
+
+Os pontos de GPS entram no registro apenas **dentro da micro selecionada**. Leituras com precisão ruim, saltos impossíveis e pausas são tratados de forma conservadora. O caminho traçado é **indicativo**, não representa automaticamente a cobertura ou a conclusão de todas as ruas.
+
+**Privacidade:** os percursos e marcações são gravados somente no armazenamento local do navegador no próprio aparelho, e **não são publicados no repositório ou enviados ao GitHub**. Exportar cria um arquivo para o usuário compartilhar sob sua responsabilidade. Qualquer pessoa com acesso ao aparelho/navegador poderá visualizar os registros locais; convém utilizar dispositivo autorizado e gerenciar os arquivos exportados com cuidado.
+
+**Limitação importante:** o site usa Geolocation API com a página em primeiro plano. Os navegadores móveis podem pausar o GPS ao bloquear a tela ou alternar para outro aplicativo. Por isso, o modo de ronda **pausa ao sair de foco**, e precisa ser retomado quando voltar à página. Recurso de manter tela acesa é solicitado quando disponível, mas **não há gravação garantida em segundo plano**. Nunca opere o celular enquanto dirige; delegue a interação ao passageiro ou pare em local seguro.
+
+**Resiliência:** a ronda é salva no navegador ao longo do percurso. Após recarregar a página, uma ronda interrompida pode ser retomada manualmente. Limpar o armazenamento do navegador pode apagar os registros não exportados. Para uso oficial e continuado, fazer pilotos em diferentes celulares e estabelecer orientações de privacidade e conservação dos dados.
+
+A análise de percentual de ruas percorridas ou consideradas vistoriadas **não está implementada**; isso exige associar GPS à malha viária e definir regras operacionais de aceitação da vistoria.
