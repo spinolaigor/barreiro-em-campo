@@ -111,6 +111,11 @@
     });
     current.visits.forEach((p,i)=> L.circleMarker([p.lat,p.lng],{radius:7,weight:2,color:'#fff',fillColor:COLORS.green,fillOpacity:1})
       .bindPopup(`<b>Vistoria ${i+1}</b><br>${esc(p.bairro)}<br>${esc(stamp(p.t))}`).addTo(markerLayer));
+    (current.gaps||[]).forEach((g,i)=>{
+      if(!Number.isFinite(g.lat)||!Number.isFinite(g.lng))return;
+      L.circleMarker([g.lat,g.lng],{radius:6,weight:2,color:'#fff',fillColor:'#d99024',fillOpacity:1})
+        .bindPopup(`<b>Interrupção ${i+1}</b><br>${esc(g.detail)}<br>${esc(stamp(g.t))}<br><small>Último ponto GPS válido; não a posição exata da falha.</small>`).addTo(markerLayer);
+    });
   }
   function addPoint(p, fromReplay=false) {
     if(!current) return false;
@@ -246,16 +251,17 @@
   function exportFile(s,format) {
     if(!s)return;
     const meta={titulo:'Barreiro em Campo — Ronda',micro:s.micro,inicio:new Date(s.startedAt).toISOString(),fim:s.endedAt?new Date(s.endedAt).toISOString():null,
-      distancia_estimada_m:Math.round(s.meters||0),total_pontos:s.points.length,total_vistorias:s.visits.length,
+      versao_aplicativo:APP_VERSION,distancia_estimada_m:Math.round(s.meters||0),total_pontos:s.points.length,total_vistorias:s.visits.length,total_interrupcoes:(s.gaps||[]).length,
       autoria_cartografica:'Igor Spínola Mello (2026)',observacao:'Percurso GPS orientativo, não comprova inspeção integral das vias.'};
     let content='',mime='',ext='';
     if(format==='geojson'){
       const features=[...segments(s).filter(v=>v.length>=2).map((pts,i)=>({type:'Feature',properties:{tipo:'rastro',trecho:i+1,micro:s.micro},geometry:{type:'LineString',coordinates:pts.map(p=>[p.lng,p.lat])}})),
-      ...s.visits.map((p,i)=>({type:'Feature',properties:{tipo:'vistoria',numero:i+1,bairro:p.bairro,micro:s.micro,horario:new Date(p.t).toISOString()},geometry:{type:'Point',coordinates:[p.lng,p.lat]}}))];
+      ...s.visits.map((p,i)=>({type:'Feature',properties:{tipo:'vistoria',numero:i+1,bairro:p.bairro,micro:s.micro,horario:new Date(p.t).toISOString()},geometry:{type:'Point',coordinates:[p.lng,p.lat]}})),
+       ...(s.gaps||[]).filter(g=>g.lat!=null&&g.lng!=null).map((g,i)=>({type:'Feature',properties:{tipo:'interrupcao',numero:i+1,causa:g.kind,descricao:g.detail,horario:new Date(g.t).toISOString(),referencia:'último ponto GPS válido'},geometry:{type:'Point',coordinates:[g.lng,g.lat]}}))];
       content=JSON.stringify({type:'FeatureCollection',metadata:meta,features},null,2);ext='geojson';mime='application/geo+json';
     }else if(format==='gpx'){
       const trk=segments(s).map(part=>'<trkseg>'+part.map(p=>`<trkpt lat="${p.lat}" lon="${p.lng}"><time>${new Date(p.t).toISOString()}</time></trkpt>`).join('')+'</trkseg>').join('');
-      const wpt=s.visits.map((p,i)=>`<wpt lat="${p.lat}" lon="${p.lng}"><name>Vistoria ${i+1}</name><desc>${esc(p.bairro)}</desc><time>${new Date(p.t).toISOString()}</time></wpt>`).join('');
+      const wpt=s.visits.map((p,i)=>`<wpt lat="${p.lat}" lon="${p.lng}"><name>Vistoria ${i+1}</name><desc>${esc(p.bairro)}</desc><time>${new Date(p.t).toISOString()}</time></wpt>`).join('')+(s.gaps||[]).filter(g=>g.lat!=null&&g.lng!=null).map((g,i)=>`<wpt lat="${g.lat}" lon="${g.lng}"><name>Interrupção ${i+1}</name><desc>${esc(g.detail+' (último ponto válido)')}</desc><time>${new Date(g.t).toISOString()}</time></wpt>`).join('');
       content=`<?xml version="1.0" encoding="UTF-8"?><gpx version="1.1" creator="Barreiro em Campo — Igor Spinola Mello" xmlns="http://www.topografix.com/GPX/1/1"><metadata><name>Ronda Micro ${s.micro}</name></metadata>${wpt}<trk><name>Ronda Micro ${s.micro}</name>${trk}</trk></gpx>`;
       mime='application/gpx+xml';ext='gpx';
     }else if(format==='csv'){
@@ -263,6 +269,7 @@
       let rows=[['tipo','data_hora','micro','latitude','longitude','precisao_gps_m','bairro','trecho'].join(';')];
       rows.push(...s.points.map(p=>['gps',new Date(p.t).toISOString(),s.micro,p.lat,p.lng,p.acc,'',p.seg].map(q).join(';')));
       rows.push(...s.visits.map(p=>['vistoria',new Date(p.t).toISOString(),s.micro,p.lat,p.lng,p.acc,p.bairro,''].map(q).join(';')));
+       rows.push(...(s.gaps||[]).map(g=>['interrupcao',new Date(g.t).toISOString(),s.micro,g.lat??'',g.lng??'','',g.kind+' — '+g.detail,''].map(q).join(';')));
       content='\uFEFF'+rows.join('\r\n');mime='text/csv;charset=utf-8';ext='csv';
     }
     const blob=new Blob([content],{type:mime});const url=URL.createObjectURL(blob);
@@ -285,7 +292,7 @@
         <div class="ronda-heading"><span class="ronda-kicker">BARREIRO EM CAMPO</span><button type="button" id="rondaHide" aria-label="Fechar painel da ronda" class="ronda-x">×</button></div>
         <div id="rondaContent"></div>
         <p class="ronda-message" id="rondaMessage" role="status" aria-live="polite"></p>
-        <div class="ronda-privacy">🔒 Trajeto salvo apenas neste aparelho. A página precisa ficar aberta.</div>
+        <div class="ronda-privacy">🔒 Trajeto salvo apenas neste aparelho. A página precisa ficar aberta.<div class="ronda-version">Versão <strong>v${APP_VERSION}</strong> · <a href="https://github.com/spinolaigor/barreiro-em-campo/blob/main/VERSOES.md" target="_blank" rel="noopener">Ver alterações</a></div></div>
       </section>`;
     document.querySelector('.map-area')?.appendChild(root);
     byId('rondaFab').addEventListener('click',()=>{panelOpen=!panelOpen;if(panelOpen && !current)step='home';drawUI()});
@@ -325,13 +332,14 @@
       content.innerHTML=`<h2 class="ronda-title">${recording?'Ronda em andamento':'Ronda pausada'}</h2>
       <div class="ronda-progress"><span class="ronda-status-dot ${recording?'pulse':'paused'}"></span><span id="rondaGpsStatus">${recording?'Aguardando GPS…':'Pausada'}</span></div>
       <div class="ronda-stats"><div><strong id="rondaDistance">${formatKm(current.meters||0)}</strong><small>trajeto</small></div><div><strong id="rondaTime">${hhmm(elapsed(current))}</strong><small>tempo</small></div><div><strong id="rondaVisits">${current.visits.length}</strong><small>marcações</small></div></div>
+       <div class="ronda-gaps">⚠ <strong id="rondaGapCount">${(current.gaps||[]).length}</strong> interrupção(ões) ou pausa(s) registrada(s). Pontos laranja mostram o último GPS válido.</div>
       <div class="ronda-actions-stack">${recording?button('mark','✓ Marcar vistoria','primary'):button('resume','▶ Retomar ronda','primary')}
       <div class="ronda-side-by-side">${recording?button('pause','Ⅱ Pausar','muted'):''}${button('finish','■ Finalizar','outline')}</div></div>
       ${button('focus','↗ Ver minha micro no mapa','text')}
       <p class="ronda-caution">Trajeto aproximado dentro da Micro ${esc(current.micro)}. Passar por uma rua não significa vistoriá-la.</p>`;
     }else if(step==='history'){
       content.innerHTML=`<div class="ronda-row"><h2 class="ronda-title">Rondas salvas</h2>${button('home','← Voltar','text')}</div>
-      ${history.length ? history.map(s=>`<article class="ronda-history-entry"><strong>Micro ${esc(s.micro)} · ${esc(stamp(s.startedAt))}</strong><small>${formatKm(s.meters||0)} · ${s.visits.length} marcação(ões) · ${hhmm(s.elapsedMs)}</small><div class="ronda-exports">${button('export','GPX','mini',`data-id="${esc(s.id)}" data-format="gpx"`)}${button('export','GeoJSON','mini',`data-id="${esc(s.id)}" data-format="geojson"`)}${button('export','CSV','mini',`data-id="${esc(s.id)}" data-format="csv"`)}${button('delete','Excluir','mini danger',`data-id="${esc(s.id)}"`)}</div></article>`).join('') : '<p class="ronda-empty">Nenhuma ronda concluída neste aparelho.</p>'}
+      ${history.length ? history.map(s=>`<article class="ronda-history-entry"><strong>Micro ${esc(s.micro)} · ${esc(stamp(s.startedAt))}</strong><small>${formatKm(s.meters||0)} · ${s.visits.length} marcação(ões) · ${(s.gaps||[]).length} interrupção(ões) · ${hhmm(s.elapsedMs)}</small><div class="ronda-exports">${button('export','GPX','mini',`data-id="${esc(s.id)}" data-format="gpx"`)}${button('export','GeoJSON','mini',`data-id="${esc(s.id)}" data-format="geojson"`)}${button('export','CSV','mini',`data-id="${esc(s.id)}" data-format="csv"`)}${button('delete','Excluir','mini danger',`data-id="${esc(s.id)}"`)}</div></article>`).join('') : '<p class="ronda-empty">Nenhuma ronda concluída neste aparelho.</p>'}
       <p class="ronda-caution">Os registros ficam somente neste navegador. Exporte antes de apagar dados do site ou trocar de celular.</p>`;
     }else{
       const selected=bridge.getSelectedMicro?.();const chosen=microById.has(selected)?selected:'01';
@@ -346,10 +354,11 @@
   }
   function updateStatus() {
     if(!current)return;
-    const d=byId('rondaDistance'),t=byId('rondaTime'),v=byId('rondaVisits'),status=byId('rondaGpsStatus'),quick=byId('rondaQuick');
+    const d=byId('rondaDistance'),t=byId('rondaTime'),v=byId('rondaVisits'),status=byId('rondaGpsStatus'),quick=byId('rondaQuick'),gaps=byId('rondaGapCount');
     if(d)d.textContent=formatKm(current.meters||0);
     if(t)t.textContent=hhmm(elapsed(current));
     if(v)v.textContent=String(current.visits.length);
+    if(gaps)gaps.textContent=String((current.gaps||[]).length);
     if(quick && current.status==='recording')quick.disabled=gpsState!=='ok'||!current.lastLocation || now()-current.lastLocation.t>45000;
     if(status){
       const texts={aguardando:'Procurando sinal de GPS…',ok:'GPS ativo · '+Math.round(lastGps?.acc||current.lastLocation?.acc||0)+' m de precisão',impreciso:'GPS impreciso. Aguarde…',fora:'Fora da micro — rastro não salvo',sem_sinal:'Sem sinal de GPS',negado:'Permissão do GPS negada',pausado:'Pausada'};
