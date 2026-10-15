@@ -8,7 +8,7 @@
   if (!bridge || !bridge.DATA || !Array.isArray(bridge.DATA.micros)) return;
 
   const KEY = 'barreiro.rondas.v1'; // Compatível com rondas salvas anteriormente
-  const APP_VERSION = '0.4.0';
+  const APP_VERSION = '0.4.1';
   const COLORS = { navy: '#142c44', blue: '#147baf', green: '#138065' };
   const microById = new Map(bridge.DATA.micros.map(m => [String(m.id), m]));
   const byId = id => document.getElementById(id);
@@ -51,29 +51,85 @@
 
   let history = [], current = null, watchId = null, wake = null, lineLayer = null,
       markerLayer = null, lastGps = null, gpsState = 'desligado', panelOpen = false,
-      step = 'home', storageOk = true, renderTick = null, outsideShownAt=0;
+      step = 'home', storageOk = true, renderTick = null, outsideShownAt=0,
+      loadFailed = false, storedRaw = null, storageMessage = '';
 
   function load() {
     try {
-      const v = JSON.parse(localStorage.getItem(KEY) || '{}');
-      history = Array.isArray(v.history) ? v.history.slice(0,15) : [];
-      current = v.current && microById.has(String(v.current.micro)) ? v.current : null;
+      storedRaw = localStorage.getItem(KEY);
+      const v = JSON.parse(storedRaw || '{}');
+      if(!v || typeof v!=='object' || (v.v!=null && v.v!==1) ||
+        (v.history!=null && !Array.isArray(v.history))) throw new Error('Formato desconhecido');
+      const valid = r => r && typeof r.id==='string' && microById.has(String(r.micro)) &&
+        Array.isArray(r.points) && Array.isArray(r.visits) &&
+        ['recording','paused','finished'].includes(r.status) && Number.isFinite(r.startedAt) &&
+        (r.gaps==null || Array.isArray(r.gaps)) &&
+        [...r.points,...r.visits].every(p=>p && Number.isFinite(p.lat) && Number.isFinite(p.lng) && Number.isFinite(p.t));
+      if((v.history||[]).some(r=>!valid(r)) || (v.current!=null && !valid(v.current))) throw new Error('Registro inválido');
+      history = v.history || [];
+      current = v.current || null;
+      loadFailed=false; storageOk=true; storageMessage='';
       if(current && current.status === 'recording') {
-        // O navegador nao garante rastreamento em segundo plano; exige retomada explicita.
-        current.elapsedMs = elapsed(current);
-        current.status='paused'; current.lastPauseAt=now(); current.resumedAt=null;
+        // Nunca contar o tempo em que a página esteve fechada como tempo ativo.
+        const lastKnown = (current.gaps || []).reduce((last,g)=>Math.max(last,g.t || 0),
+          Math.max(current.resumedAt || current.startedAt,current.points.at(-1)?.t || 0,current.visits.at(-1)?.t || 0));
+        const checkpoint = Number.isFinite(current.savedAt) ? current.savedAt : lastKnown;
+        current.elapsedMs = Number.isFinite(current.savedElapsedMs) ? current.savedElapsedMs :
+          (current.elapsedMs || 0) + Math.max(0,checkpoint-(current.resumedAt || current.startedAt));
+        current.status='paused'; current.lastPauseAt=checkpoint; current.resumedAt=null;
+        current.segment=(current.segment || 0)+1;
+        current.gaps=current.gaps || [];
+        const loc=current.lastLocation;
+        current.gaps.push({kind:'recuperacao',detail:'Página interrompida; período até a reabertura sem registro confirmado.',
+          t:checkpoint,detectedAt:now(),lat:loc?.lat??null,lng:loc?.lng??null});
       }
-    } catch(e) {history=[]; current=null; storageOk=false;}
-  }
-  function persist() {
-    try {
-      const bounded = history.slice(0,15).map(s => ({...s,points:s.points.slice(-4500)}));
-      localStorage.setItem(KEY,JSON.stringify({v:1,current,history:bounded}));
-      storageOk=true;
-    } catch(err) {
-      storageOk=false;
-      inform('Espaço insuficiente no celular. Exporte a ronda agora para não perder o registro.','warning');
+    } catch(e) {
+      history=[]; current=null; loadFailed=true; storageOk=false;
+      storageMessage='Não foi possível ler os registros. Eles não foram apagados. Baixe o backup original antes de qualquer recuperação.';
     }
+  }
+  function storageFailure(message) {
+    storageOk=false; storageMessage=message;
+    if(current?.status==='recording') {
+      current.elapsedMs=elapsed(current);current.status='paused';current.lastPauseAt=now();current.resumedAt=null;
+      current.segment=(current.segment || 0)+1;stopWatch();gpsState='pausado';
+    }
+    panelOpen=true;
+    if(byId('rondaFab'))drawUI();
+    inform(message,'warning');
+    return false;
+  }
+  function persist(nextCurrent=current,nextHistory=history) {
+    if(loadFailed)return storageFailure(storageMessage);
+    try {
+      // Não sobrescrever mudanças de outra aba já observáveis no armazenamento.
+      if(localStorage.getItem(KEY)!==storedRaw) return storageFailure(
+        'Outra aba alterou os registros. Baixe o backup desta sessão e recarregue antes de continuar.');
+      const savedAt=now();
+      const savedCurrent=nextCurrent ? {...nextCurrent,savedAt,savedElapsedMs:elapsed(nextCurrent)} : null;
+      const raw=JSON.stringify({v:1,current:savedCurrent,history:nextHistory});
+      localStorage.setItem(KEY,raw);
+      storedRaw=raw;
+      if(nextCurrent){nextCurrent.savedAt=savedAt;nextCurrent.savedElapsedMs=savedCurrent.savedElapsedMs;}
+      storageOk=true;storageMessage='';
+      return true;
+    } catch(err) {
+      return storageFailure('Não foi possível salvar. A ronda foi pausada. Baixe o backup completo agora e não feche esta página.');
+    }
+  }
+  function download(content,mime,filename) {
+    const blob=new Blob([content],{type:mime});const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download=filename;
+    document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);
+  }
+  function backupAll() {
+    // Inclui o que ainda estiver em memória caso o armazenamento esteja cheio.
+    const content=loadFailed ? (storedRaw ?? '') : JSON.stringify({
+      format:'barreiro-rondas-backup',version:1,appVersion:APP_VERSION,exportedAt:new Date().toISOString(),
+      data:{v:1,current:current ? {...current,savedAt:now(),savedElapsedMs:elapsed(current)} : null,history}
+    },null,2);
+    download(content,'application/json','Barreiro_Backup_Rondas_'+new Date().toISOString().replace(/[:.]/g,'-')+'.json');
+    if(storageOk)inform('Backup preparado. Confira o arquivo em Downloads/Arquivos e guarde uma cópia em local autorizado.');
   }
   function recordGap(kind, detail, t=now()) {
     if(!current)return;
@@ -82,7 +138,6 @@
     if(prev && prev.kind===kind && t-prev.t<60000)return;
     const loc=current.lastLocation;
     current.gaps.push({kind,detail,t,lat:loc?.lat??null,lng:loc?.lng??null});
-    if(current.gaps.length>300)current.gaps=current.gaps.slice(-300);
     persist();
   }
   function markNewSegment() { if(current) current.segment = (current.segment || 0) + 1; }
@@ -188,7 +243,7 @@
   }
   function inform(msg,type='info') {
     const el=byId('rondaMessage'); if(!el)return;
-    el.textContent=msg; el.dataset.type=type;
+    el.textContent=storageOk ? msg : storageMessage; el.dataset.type=storageOk ? type : 'warning';
   }
   function chooseMicro(micro) {
     if(!microById.has(micro))return;
@@ -202,6 +257,7 @@
     return true;
   }
   function start() {
+    if(!storageOk){inform(storageMessage,'warning');return;}
     if(!ensureGPS())return;
     const micro=byId('rondaMicro').value;
     if(!microById.has(micro)){inform('Escolha a micro para iniciar.','warning');return}
@@ -209,31 +265,32 @@
     current={id:sid(),micro,status:'recording',startedAt:now(),resumedAt:now(),elapsedMs:0,lastPauseAt:null,
       endedAt:null,points:[],visits:[],gaps:[],meters:0,segment:0,outside:0,lastLocation:null};
     lastGps=null;gpsState='aguardando';
-    chooseMicro(micro); persist(); drawTrack();
+    chooseMicro(micro); if(!persist())return; drawTrack();
     startWatch(); panelOpen=false;step='home';drawUI();
     inform('Ronda iniciada! Aguarde o sinal de GPS e mantenha esta página aberta.');
   }
   function pause(reason='Ronda pausada. Toque Retomar para continuar.') {
     if(!current || current.status!=='recording')return;
     current.elapsedMs = elapsed(current);
-    recordGap('pausa',reason);
     current.status='paused';current.lastPauseAt=now();current.resumedAt=null;
-    markNewSegment(); stopWatch(); gpsState='pausado';persist();drawUI();inform(reason,'warning');
+    markNewSegment(); stopWatch(); gpsState='pausado';recordGap('pausa',reason);if(storageOk)persist();drawUI();inform(reason,'warning');
   }
   function resume() {
+    if(!storageOk){inform(storageMessage,'warning');return;}
     if(!current || current.status!=='paused'||!ensureGPS())return;
     current.status='recording';current.resumedAt=now();current.lastPauseAt=null;
-    markNewSegment(); lastGps=null; persist();startWatch();panelOpen=false;drawUI();
+    markNewSegment(); lastGps=null; if(!persist())return;startWatch();panelOpen=false;drawUI();
     inform('Ronda retomada. Continue com a tela aberta.');
   }
   function finish() {
     if(!current || !['paused','recording'].includes(current.status))return;
     if(!window.confirm('Finalizar esta ronda? O trajeto ficará salvo neste aparelho e poderá ser exportado.'))return;
-    if(current.status==='recording')current.elapsedMs=elapsed(current);
-    stopWatch();current.status='finished';current.endedAt=now();current.resumedAt=null;
-    history.unshift(current);history=history.slice(0,15);
-    current=null; lastGps=null;gpsState='desligado';persist();removeTrack();
-    panelOpen=true;step='history';drawUI();inform('Ronda finalizada e salva neste aparelho. Você já pode exportá-la.');
+    const completed={...current,elapsedMs:elapsed(current),status:'finished',endedAt:now(),resumedAt:null};
+    const nextHistory=[completed,...history];
+    if(!persist(null,nextHistory))return;
+    stopWatch();history=nextHistory;
+    current=null; lastGps=null;gpsState='desligado';removeTrack();
+    panelOpen=true;step='history';drawUI();inform('Ronda finalizada e salva neste navegador. Baixe o backup para guardar uma cópia fora dele.');
   }
   function mark() {
     if(!current || current.status!=='recording'){inform('Inicie ou retome a ronda antes de marcar uma vistoria.','warning');return;}
@@ -241,7 +298,7 @@
     if(!p || now()-p.t>45000 || gpsState!=='ok'){inform('Aguardando uma posição recente e válida do GPS para marcar.','warning');return;}
     if(!inside(p,microById.get(current.micro).geometry)){inform('Ponto fora da micro: não foi marcado.','warning');return;}
     const visit={lat:p.lat,lng:p.lng,t:now(),acc:p.acc,bairro:bairroAt(p)};
-    current.visits.push(visit);persist();drawTrack();updateStatus();
+    current.visits.push(visit);if(!persist())return;drawTrack();updateStatus();
     const quick=byId('rondaQuick'); if(quick && !quick.hidden){quick.textContent='✓ Vistoria '+current.visits.length+' marcada';setTimeout(()=>{if(quick)quick.textContent='✓ Marcar vistoria'},1800)}
     inform('Vistoria '+current.visits.length+' marcada em '+visit.bairro+'!');
     if(navigator.vibrate)try{navigator.vibrate(80)}catch(e){}
@@ -251,7 +308,7 @@
   function exportFile(s,format) {
     if(!s)return;
     const meta={titulo:'Barreiro em Campo — Ronda',micro:s.micro,inicio:new Date(s.startedAt).toISOString(),fim:s.endedAt?new Date(s.endedAt).toISOString():null,
-      versao_aplicativo:APP_VERSION,distancia_estimada_m:Math.round(s.meters||0),total_pontos:s.points.length,total_vistorias:s.visits.length,total_interrupcoes:(s.gaps||[]).length,
+      versao_aplicativo:APP_VERSION,distancia_estimada_m:Math.round(s.meters||0),total_pontos:s.points.length,total_vistorias:s.visits.length,total_interrupcoes:(s.gaps||[]).length,interrupcoes:s.gaps||[],
       autoria_cartografica:'Igor Spínola Mello (2026)',observacao:'Percurso GPS orientativo, não comprova inspeção integral das vias.'};
     let content='',mime='',ext='';
     if(format==='geojson'){
@@ -279,7 +336,8 @@
   }
   function erase(id){
     if(!window.confirm('Apagar esta ronda deste aparelho? Depois de apagar, não será possível recuperar sem um arquivo exportado.'))return;
-    history=history.filter(s=>s.id!==id);persist();drawUI();inform('Registro removido deste aparelho.');
+    const nextHistory=history.filter(s=>s.id!==id);if(!persist(current,nextHistory))return;
+    history=nextHistory;drawUI();inform('Registro removido deste navegador.');
   }
   function buildUI() {
     const root=document.createElement('div');root.className='ronda-root';root.id='rondaRoot';
@@ -301,6 +359,7 @@
     byId('rondaContent').addEventListener('click',event=>{
       const b=event.target.closest('button[data-ronda]');if(!b)return;
       switch(b.dataset.ronda){
+        case 'backup':backupAll();break;
         case 'start':start();break;case 'pause':pause();break;case 'resume':resume();break;
         case 'finish':finish();break;case 'mark':mark();break;
         case 'history':step='history';drawUI();break;
@@ -350,6 +409,8 @@
       <p class="ronda-caution">Durante a ronda, toque em <strong>Marcar vistoria</strong> quando inspecionar um ponto. Dirigindo? Peça a alguém para operar o celular.</p>
       ${button('history','↗ Ver rondas salvas ('+history.length+')','text')}`;
     }
+    content.insertAdjacentHTML('beforeend',button('backup','↓ Baixar backup completo','outline'));
+    if(!storageOk)inform(storageMessage,'warning');
     updateStatus();
   }
   function updateStatus() {
@@ -359,15 +420,16 @@
     if(t)t.textContent=hhmm(elapsed(current));
     if(v)v.textContent=String(current.visits.length);
     if(gaps){const n=(current.gaps||[]).length;gaps.textContent=String(n);gaps.closest('.ronda-gaps')?.classList.toggle('clear',n===0);const icon=byId('rondaGapIcon');if(icon)icon.textContent=n?'⚠':'✓';}
-    if(quick && current.status==='recording')quick.disabled=gpsState!=='ok'||!lastGps || now()-lastGps.t>45000;
+    if(quick)quick.disabled=current.status!=='recording'||!storageOk||gpsState!=='ok'||!lastGps || now()-lastGps.t>45000;
     if(status){
       const texts={aguardando:'Procurando sinal de GPS…',ok:'GPS ativo · '+Math.round(lastGps?.acc||current.lastLocation?.acc||0)+' m de precisão',impreciso:'GPS impreciso. Aguarde…',fora:'Fora da micro — rastro não salvo',sem_sinal:'Sem sinal de GPS',negado:'Permissão do GPS negada',pausado:'Pausada'};
       status.textContent=current.status==='paused'?'Pausada':(texts[gpsState]||'Procurando sinal…');
     }
   }
   function startApp(){
-    load();buildUI();drawUI();
+    load();buildUI();if(!storageOk)panelOpen=true;drawUI();
     if(current && current.status==='paused'){
+      if(storageOk)persist();
       panelOpen=true;drawUI();drawTrack();inform('Ronda recuperada e pausada. Toque Retomar quando estiver pronto.');
     }
     renderTick=setInterval(updateStatus,2500);
@@ -375,7 +437,10 @@
       if(document.hidden && current?.status==='recording')pause('Ronda pausada porque a página saiu de foco. Volte e toque Retomar.');
     });
     window.addEventListener('beforeunload',e=>{if(current?.status==='recording'){e.preventDefault();e.returnValue='';}});
-    window.addEventListener('storage',e=>{if(e.key===KEY && current?.status!=='recording') {load();drawUI();}});
+    window.addEventListener('storage',e=>{if(e.key===KEY || e.key===null) {
+      if(current || !storageOk)storageFailure('Outra aba alterou os registros. Baixe o backup desta sessão e recarregue antes de continuar.');
+      else {load();drawUI();}
+    }});
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',startApp,{once:true});
   else startApp();

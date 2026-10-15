@@ -19,6 +19,18 @@ jobs:
     steps:
       - name: Baixar arquivos
         uses: actions/checkout@v4
+      - name: Preparar Node para verificação
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verificar código e conservação dos registros
+        run: |
+          node --check ronda.js
+          node --test tests/*.test.cjs
+      - name: Preparar somente arquivos públicos
+        run: |
+          mkdir -p public
+          cp index.html ronda.js ronda.css micros.geojson CREDITOS.md LICENSE.txt README.md VERSOES.md versao.json RECUPERACAO.md public/
       - name: Configurar Pages
         uses: actions/configure-pages@v5
         with:
@@ -26,7 +38,7 @@ jobs:
       - name: Preparar arquivos do site
         uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: public
       - name: Publicar
         id: deployment
         uses: actions/deploy-pages@v4

@@ -1,6 +1,6 @@
 # Barreiro em Campo — mapa territorial público
 
-**Site em operação (piloto):** https://spinolaigor.github.io/barreiro-em-campo/ · **Versão atual:** v0.4.0 — [histórico de versões](VERSOES.md)
+**Site em operação (piloto):** https://spinolaigor.github.io/barreiro-em-campo/ · **Versão atual:** v0.4.1 — [histórico de versões](VERSOES.md)
 
 Projeto público de consulta cartográfica das **10 microrregiões da Regional Barreiro (Belo Horizonte)**, com busca por micro, bairro ou avenida, camadas territoriais e localização aproximada mediante permissão do navegador.
 
@@ -51,3 +51,11 @@ A análise de percentual de ruas percorridas ou consideradas vistoriadas **não 
 Consulte [VERSOES.md](VERSOES.md) para saber o que mudou no aplicativo e comparar versões anteriores pelo histórico de commits. O mapa registra eventos de pausa, falhas e intervalos longos sem pontos de GPS e marca **o último ponto válido antes de uma interrupção** em laranja. Esse marcador **não representa necessariamente o local exato da perda do GPS**.
 
 O histórico de versões do site **não é backup das rondas**. As rondas permanecem neste navegador até serem exportadas; salvar arquivos GPX, GeoJSON ou CSV ao terminar cada ronda é essencial para evitar perda de dados. Arquivos de trajetória incluem coordenadas e horários, portanto devem ser guardados e compartilhados somente com as pessoas autorizadas.
+
+## Preservação e backup (v0.4.1)
+
+O painel da ronda oferece **Baixar backup completo** em JSON. O arquivo inclui o histórico e a ronda atual, inclusive dados ainda em memória se o salvamento falhar. Confira o download e envie pelo celular ao local privado autorizado. Não envie rondas para este repositório ou para a pasta de publicação do site.
+
+Não há mais descarte automático por quantidade de rondas, pontos do histórico ou eventos. O armazenamento continua finito: se falhar, a coleta é pausada e o usuário deve baixar o backup antes de fechar a página. Use apenas uma aba para gravar. Não há sincronização automática entre aparelhos nem importador de backup na interface nesta versão.
+
+Para validar o código: `node --check ronda.js` e `node --test tests/*.test.cjs`. Consulte [RECUPERACAO.md](RECUPERACAO.md) para retorno de versão.

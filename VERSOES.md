@@ -1,8 +1,21 @@
 # Barreiro em Campo — Histórico de versões
 
-**Versão atual: v0.4.0 (piloto)** — 15 de outubro de 2026.
+**Versão atual: v0.4.1 (piloto)** — 15 de outubro de 2026.
 
 Aqui fica registrado **o que mudou no aplicativo**. As rondas são dados separados: continuam salvas localmente no navegador até que sejam exportadas, e não são recuperadas automaticamente ao voltar para um código anterior.
+
+## v0.4.1 — Preservação das rondas
+- Removidos cortes silenciosos de 15 rondas, 4.500 pontos por ronda e 300 eventos.
+- Finalização e exclusão só são confirmadas após gravação bem-sucedida.
+- Falha de armazenamento pausa a coleta, mantém os dados em memória e apresenta orientação de backup.
+- Recuperação de página interrompida considera apenas o tempo confirmado até o último checkpoint; o intervalo desconhecido fica identificado.
+- Backup JSON completo disponível no painel, incluindo dados em memória; não é enviado automaticamente para a nuvem.
+- Dados ilegíveis ou de formato desconhecido não são sobrescritos. Alteração observável em outra aba interrompe a escrita; use somente uma aba para gravar.
+- Chave e formato de armazenamento v1 preservados. Não há migração para IndexedDB nesta correção.
+- Testes automáticos executados antes da publicação.
+- Cartografia e composição das micros preservadas.
+
+**Limites desta etapa:** o armazenamento do navegador continua finito. O backup JSON ainda não tem importador na interface (restauração assistida). Não recupera pontos/rondas já descartados pelas versões anteriores. GPS em segundo plano continua não garantido.
 
 ## v0.4.0 — Controle das mudanças e falhas no GPS
 - Identificação da versão no painel de Ronda GPS, com acesso a este histórico.
