@@ -1,25 +1,29 @@
-# Barreiro em Campo — Mapa Público
+# Barreiro em Campo — mapa territorial público
 
-Site interativo da divisão territorial das 10 microrregiões da Regional Barreiro, BH.
+**Site planejado:** https://spinolaigor.github.io/barreiro-em-campo/
 
-**Elaboração cartográfica e estruturação das camadas vetoriais:** Igor Spínola Mello (2026).
+Projeto público de consulta cartográfica das **10 microrregiões da Regional Barreiro (Belo Horizonte)**, com busca por micro, bairro ou avenida, camadas territoriais e localização aproximada mediante permissão do navegador.
 
-**Dados de referência:** PBH e insumos territoriais do projeto. Consulte `CREDITOS.md` e `LICENSE.txt`.
+**Elaboração cartográfica e estruturação das camadas vetoriais derivadas:** Igor Spínola Mello (2026).  
+**Fontes de referência:** Prefeitura de Belo Horizonte (PBH) e demais insumos geográficos do projeto. Consulte [CREDITOS.md](CREDITOS.md) e [LICENSE.txt](LICENSE.txt).
 
-## Publicação via GitHub Pages
+## Ativar a publicação (uma única vez)
 
-1. Crie um repositório **público e dedicado** no seu GitHub (sugestão: `barreiro-em-campo`).
-2. Envie os arquivos desta pasta para a raiz do repositório (principalmente `index.html`).
-3. Nas configurações do repositório, abra **Settings > Pages**.
-4. Em **Build and deployment**, configure **Deploy from a branch > main / (root)** e salve.
-5. Após a publicação, compartilhe o endereço HTTPS informado pelo GitHub Pages com os fiscais pelo WhatsApp.
+1. Acesse [Settings → Pages](https://github.com/spinolaigor/barreiro-em-campo/settings/pages).
+2. Em **Build and deployment**, selecione **GitHub Actions** como origem (*Source*).
+3. Confira a execução automática em [Actions](https://github.com/spinolaigor/barreiro-em-campo/actions/workflows/pages.yml).
+4. Aguarde a execução mostrar **Success**. Só então distribua o endereço HTTPS do site para os fiscais.
 
-**Atenção:** evite colocar esta publicação em repositórios antigos com licença permissiva que não corresponda aos direitos que deseja preservar. Mesmo com `LICENSE.txt`, direitos de terceiros e dados oficiais continuam sob suas respectivas condições.
+O fluxo `.github/workflows/pages.yml` já está criado para publicar automaticamente cada alteração da branch `main`. A ativação inicial do Pages deve ser feita pelo proprietário do repositório.
 
-## Uso
+## Conteúdo público
 
-- Selecione uma micro; pesquise bairro, micro ou avenida; use os controles de camadas.
-- Ao clicar em “Me localizar”, o navegador solicita autorização. O GPS exige um contexto HTTPS (como GitHub Pages).
-- O link direto da micro pode ser enviado com o sufixo `#micro=01` (exemplo para a Micro 01).
-- O site **não é um Google Maps**: não cria navegação por voz. Para consultar os polígonos dentro do ecossistema Google, importe `Barreiro_My_Maps_Publico.kmz` no Google My Maps.
-- Os limites da micro são de referência; não substituem avaliação de vias de divisa.
+- `index.html`: mapa interativo com 10 micros, 79 localidades e corredores candidatos
+- `micros.geojson`: polígonos geográficos e metadados de proveniência
+- `CREDITOS.md` e `LICENSE.txt`: créditos, direitos e restrições de uso
+
+**Privacidade:** esta edição pública não inclui nomes dos fiscais. O GPS só é consultado após autorização do usuário. O projeto não substitui delimitação oficial nem verificação de ruas limítrofes.
+
+**Compartilhamento:** após a publicação, um link individual para uma micro pode ser enviado com `#micro=01`, substituindo o número.
+
+Para visualizar as geometrias no aplicativo Google Maps, é necessário importá-las separadamente no Google My Maps; o site não oferece navegação por voz.
