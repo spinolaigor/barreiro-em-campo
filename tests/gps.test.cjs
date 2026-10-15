@@ -113,10 +113,10 @@ test('sem novas posições painel avisa e desabilita marcação de vistoria',()=
 });
 
 test('desligar acompanhamento não impede registrar deslocamento',()=>{
-  const h=gpsHarness();h.emit(-20,-44);
+  const h=gpsHarness();h.emit(-20,-44,12,Date.now()-15000);
   h.api.setFollow(false);
   const before=h.mapStats().panCount;
-  h.emit(-20.001,-44.001);
+  h.emit(-20.001,-44.001,12,Date.now());
   assert.equal(h.mapStats().panCount,before);
   assert.equal(h.api.get().current.points.length,2);
 });
