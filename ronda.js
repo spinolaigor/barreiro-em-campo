@@ -7,7 +7,8 @@
   const bridge = window.BarreiroBridge;
   if (!bridge || !bridge.DATA || !Array.isArray(bridge.DATA.micros)) return;
 
-  const KEY = 'barreiro.rondas.v1';
+  const KEY = 'barreiro.rondas.v1'; // Compatível com rondas salvas anteriormente
+  const APP_VERSION = '0.4.0';
   const COLORS = { navy: '#142c44', blue: '#147baf', green: '#138065' };
   const microById = new Map(bridge.DATA.micros.map(m => [String(m.id), m]));
   const byId = id => document.getElementById(id);
@@ -74,6 +75,16 @@
       inform('Espaço insuficiente no celular. Exporte a ronda agora para não perder o registro.','warning');
     }
   }
+  function recordGap(kind, detail, t=now()) {
+    if(!current)return;
+    if(!Array.isArray(current.gaps))current.gaps=[];
+    const prev=current.gaps.at(-1);
+    if(prev && prev.kind===kind && t-prev.t<60000)return;
+    const loc=current.lastLocation;
+    current.gaps.push({kind,detail,t,lat:loc?.lat??null,lng:loc?.lng??null});
+    if(current.gaps.length>300)current.gaps=current.gaps.slice(-300);
+    persist();
+  }
   function markNewSegment() { if(current) current.segment = (current.segment || 0) + 1; }
   function mapReady() { return !!getMap() && !!window.L; }
   function removeTrack() {
@@ -109,16 +120,17 @@
         outsideShownAt=now();
         inform('Fora da Micro '+current.micro+'. Esse trecho não será registrado.','warning');
       }
-      if(!fromReplay){current.outside=(current.outside||0)+1;markNewSegment();}
+      if(!fromReplay){current.outside=(current.outside||0)+1;if(!current.outsideActive){recordGap('fora','Saída da Micro '+current.micro,p.t);current.outsideActive=true;}markNewSegment();}
       gpsState='fora'; return false;
     }
+    current.outsideActive=false;
     const prev=current.points.at(-1);
     if(prev) {
       const seconds=Math.max(0.001,(p.t-prev.t)/1000), dist=haversine(p,prev);
       if(seconds<2 && dist<7) return false;
       // Localizacoes impossiveis sao descartadas, como saltos de GPS.
-      if(dist/seconds>40 && dist>65) {gpsState='impreciso';return false;}
-      if(seconds>75){markNewSegment();}
+      if(dist/seconds>40 && dist>65) {gpsState='impreciso';if(!fromReplay)recordGap('salto','Leitura de GPS com deslocamento improvável',p.t);markNewSegment();return false;}
+      if(seconds>75){if(!fromReplay)recordGap('sem_registro','Intervalo de '+Math.round(seconds)+' s sem pontos válidos',p.t);markNewSegment();}
       if(dist<9 && seconds<20) return false;
       if(prev.seg===current.segment && seconds<=75)current.meters=(current.meters||0)+dist;
     }
@@ -138,13 +150,15 @@
     const {latitude:lat,longitude:lng,accuracy:acc}=position.coords;
     lastGps={lat,lng,acc,t:position.timestamp || now()};
     if(!Number.isFinite(acc) || acc>75 || !Number.isFinite(lat) || !Number.isFinite(lng)){
-      gpsState='impreciso'; updateStatus(); return;
+      gpsState='impreciso';if(!current.impreciseActive){recordGap('impreciso','Sinal de GPS impreciso',position.timestamp||now());current.impreciseActive=true;markNewSegment();}updateStatus();return;
     }
+    current.impreciseActive=false;
     addPoint({lat,lng,acc,t:position.timestamp || now()});
     updateStatus();
   }
   function gpsError(err) {
     gpsState = err.code===1 ? 'negado' : 'sem_sinal';
+    recordGap(gpsState,err.code===1?'Permissão de localização negada':'Interrupção no sinal do GPS');markNewSegment();
     if(err.code===1){ panelOpen=true; pause('Permissão de localização negada. Ative a localização nas permissões do site e toque Retomar.'); }
     else inform('GPS sem sinal no momento. Continue com a tela aberta.','warning');
     updateStatus();
@@ -188,7 +202,7 @@
     if(!microById.has(micro)){inform('Escolha a micro para iniciar.','warning');return}
     if(current && ['paused','recording'].includes(current.status)) {inform('Finalize a ronda atual antes de começar outra.','warning');return;}
     current={id:sid(),micro,status:'recording',startedAt:now(),resumedAt:now(),elapsedMs:0,lastPauseAt:null,
-      endedAt:null,points:[],visits:[],meters:0,segment:0,outside:0,lastLocation:null};
+      endedAt:null,points:[],visits:[],gaps:[],meters:0,segment:0,outside:0,lastLocation:null};
     lastGps=null;gpsState='aguardando';
     chooseMicro(micro); persist(); drawTrack();
     startWatch(); panelOpen=false;step='home';drawUI();
@@ -197,6 +211,7 @@
   function pause(reason='Ronda pausada. Toque Retomar para continuar.') {
     if(!current || current.status!=='recording')return;
     current.elapsedMs = elapsed(current);
+    recordGap('pausa',reason);
     current.status='paused';current.lastPauseAt=now();current.resumedAt=null;
     markNewSegment(); stopWatch(); gpsState='pausado';persist();drawUI();inform(reason,'warning');
   }
@@ -218,7 +233,7 @@
   function mark() {
     if(!current || current.status!=='recording'){inform('Inicie ou retome a ronda antes de marcar uma vistoria.','warning');return;}
     const p=current.lastLocation;
-    if(!p || now()-p.t>45000){inform('Aguardando uma posição recente e precisa do GPS para marcar.','warning');return;}
+    if(!p || now()-p.t>45000 || gpsState!=='ok'){inform('Aguardando uma posição recente e válida do GPS para marcar.','warning');return;}
     if(!inside(p,microById.get(current.micro).geometry)){inform('Ponto fora da micro: não foi marcado.','warning');return;}
     const visit={lat:p.lat,lng:p.lng,t:now(),acc:p.acc,bairro:bairroAt(p)};
     current.visits.push(visit);persist();drawTrack();updateStatus();
@@ -302,7 +317,7 @@
     fab.setAttribute('aria-expanded',String(panelOpen));
     fab.setAttribute('aria-label',recording?'Ronda em andamento. Abrir controles':active?'Ronda pausada. Abrir controles':'Abrir modo de ronda GPS');
     quick.hidden=!recording || panelOpen;
-    quick.disabled=!recording || !current.lastLocation || now()-current.lastLocation.t>45000;
+    quick.disabled=!recording || gpsState!=='ok' || !current.lastLocation || now()-current.lastLocation.t>45000;
     panel.hidden=!panelOpen;
     if(!panelOpen)return;
     const content=byId('rondaContent');
@@ -335,7 +350,7 @@
     if(d)d.textContent=formatKm(current.meters||0);
     if(t)t.textContent=hhmm(elapsed(current));
     if(v)v.textContent=String(current.visits.length);
-    if(quick && current.status==='recording')quick.disabled=!current.lastLocation || now()-current.lastLocation.t>45000;
+    if(quick && current.status==='recording')quick.disabled=gpsState!=='ok'||!current.lastLocation || now()-current.lastLocation.t>45000;
     if(status){
       const texts={aguardando:'Procurando sinal de GPS…',ok:'GPS ativo · '+Math.round(lastGps?.acc||current.lastLocation?.acc||0)+' m de precisão',impreciso:'GPS impreciso. Aguarde…',fora:'Fora da micro — rastro não salvo',sem_sinal:'Sem sinal de GPS',negado:'Permissão do GPS negada',pausado:'Pausada'};
       status.textContent=current.status==='paused'?'Pausada':(texts[gpsState]||'Procurando sinal…');
