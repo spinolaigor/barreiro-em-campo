@@ -109,11 +109,11 @@ test('parado recebe atualização visual, mas não cria pontos falsos',()=>{
   assert.match(h.api.get().gpsStats.lastResult,/Pouco deslocamento/);
 });
 
-test('sem novas posições painel avisa e desabilita marcação de vistoria',()=>{
+test('sem novas posições painel avisa e permite solicitar nova leitura ao marcar',()=>{
   const h=gpsHarness();h.emit(-20,-44);
   h.api.setLastFixTime(Date.now()-40000);h.api.updateStatus();
   assert.match(h.el('rondaGpsStatus').textContent,/nova leitura GPS/);
-  assert.equal(h.el('rondaQuick').disabled,true);
+  assert.equal(h.el('rondaQuick').disabled,false); // toque solicitará um novo GPS antes da marcação
   assert.match(h.el('rondaLastFix').textContent,/desatualizado/);
 });
 
