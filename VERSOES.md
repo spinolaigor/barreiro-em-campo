@@ -4,6 +4,18 @@
 
 Aqui fica registrado **o que mudou no aplicativo**. As rondas são dados separados: continuam salvas localmente no navegador até que sejam exportadas, e não são recuperadas automaticamente ao voltar para um código anterior.
 
+## v0.4.2-beta — Diagnóstico do GPS (branch de testes, NÃO publicada)
+
+- A posição recebida do GPS passa a aparecer num marcador próprio, com círculo de precisão, **mesmo fora da micro selecionada**. Isso não significa que o trajeto foi gravado fora da micro.
+- Botão **Seguindo GPS / Seguir GPS** permite acompanhar a posição no mapa ou movimentá-lo manualmente.
+- Painel informa quando chegou a última leitura, precisão estimada, quantidade de leituras recebidas e pontos realmente gravados. Quando não há atualizações, o aviso descreve o fato, sem concluir automaticamente que o GPS perdeu o sinal.
+- Leituras de até 75 m de precisão continuam elegíveis ao rastro dentro da micro. Entre 75 m e 250 m podem ser mostradas aproximadamente, mas **não** são gravadas no trajeto. Pontos antigos são rejeitados.
+- Para marcar vistoria com GPS parado/desatualizado, a ferramenta solicita uma leitura nova naquele momento. Não salva o ponto se a nova localização não for válida e pertencente à micro.
+- Testes de GPS e validação automática em branch/PR, sem publicar o site automaticamente.
+- **Sem mudanças na cartografia e na chave de armazenamento das rondas existentes.**
+- **Ainda não inclui PDF, upload automático ao Drive ou rastreamento garantido com a tela apagada.**
+- Precisa de testes com Android e iPhone em navegador HTTPS antes da liberação.
+
 ## v0.4.1 — Preservação das rondas
 - Removidos cortes silenciosos de 15 rondas, 4.500 pontos por ronda e 300 eventos.
 - Finalização e exclusão só são confirmadas após gravação bem-sucedida.
