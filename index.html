@@ -39,11 +39,54 @@
 }
 @media(max-width:370px){.titlebox strong{font-size:10px}.titlebox small{display:none}.action{padding:8px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
+
+/* Barreiro em Campo — refinamento de acessibilidade e navegação móvel */
+.sheet-toggle{display:none}
+@media(max-width:700px){
+ .sidebar{height:184px;border-radius:21px 21px 0 0;padding-top:7px;padding-bottom:env(safe-area-inset-bottom,0px);transition:height .25s ease;box-shadow:0 -7px 30px #10294233}
+ .sidebar::before{display:none}
+ .sheet-toggle{display:flex;align-items:center;justify-content:center;width:100%;border:0;background:transparent;padding:2px 15px 0;color:#657789;font-size:11px;min-height:17px;position:relative}
+ .sheet-handle{width:35px;height:4px;background:#d0dae5;border-radius:8px;position:absolute;left:calc(50% - 17.5px);top:2px}
+ .sheet-toggle-text{position:absolute;right:17px;top:0;white-space:nowrap;font-weight:720;letter-spacing:-.1px}
+ .sheet-toggle-text span{display:inline-block;margin-left:2px;transition:transform .2s}
+ .sidebar.expanded .sheet-toggle-text span{transform:rotate(180deg)}
+ .sidebar.expanded{height:min(70dvh,600px)}
+ .sidebar .brand{padding:10px 16px 1px}
+ .sidebar .brand h1{font-size:15px;line-height:1.15;margin:2px 0 1px}
+ .sidebar .brand .desktop-br{display:none}
+ .findbox{margin:6px 13px 9px}
+ .findbox input{min-height:42px;padding:10px 12px 10px 39px;font-size:13px}
+ .group-list{padding:0 13px 9px;gap:8px;scrollbar-width:none;scroll-snap-type:x proximity;min-height:67px}
+ .group-list::-webkit-scrollbar{display:none}
+ .group{width:151px;min-height:59px;border-color:#e6ebf0;scroll-snap-align:start;padding:7px 9px;background:#fff}
+ .group .num{width:36px;height:36px}
+ .group .fiscal{font-size:12px}
+ .group .micro-line{font-size:9.5px}
+ .sidebar.expanded .group-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));overflow-y:auto;overflow-x:hidden;align-content:start;flex:1;scroll-snap-type:none;min-height:0;padding-bottom:15px;scrollbar-width:thin}
+ .sidebar.expanded .group{width:100%;min-width:0}
+ .sidebar.expanded .group .micro-line{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:calc(50vw - 85px)}
+ .sidebar.expanded .section-heading{display:flex;padding:8px 18px 11px}
+ .sidebar.expanded .brand{padding-top:17px}
+ .map-footer{bottom:195px}
+ .leaflet-bottom.leaflet-right,.leaflet-bottom.leaflet-left{bottom:182px}
+ .sidebar.expanded~.map-area .map-footer{bottom:calc(min(70dvh,600px) + 10px)}
+ .search-results{bottom:49px;top:auto;max-height:min(45dvh,420px)}
+ .toast{bottom:200px}
+ .detail{height:min(77dvh,650px)}
+}
+@media(max-width:370px){
+ .sheet-toggle-text{font-size:10px;right:11px}
+ .group{width:143px}
+ .titlebox{max-width:calc(100vw - 182px)}
+ .titlebox .icon{display:none}
+ .titlebox small{font-size:9px}
+}
 </style>
 </head>
 <body>
 <div class="app">
- <aside class="sidebar" aria-label="Microrregiões do Barreiro">
+ <aside class="sidebar" id="sidebarRoot" aria-label="Microrregiões do Barreiro">
+  <button class="sheet-toggle" id="sheetToggle" type="button" aria-expanded="false" aria-controls="groupList" aria-label="Ver todas as microrregiões"><span class="sheet-handle"></span><span class="sheet-toggle-text">Ver todas as micros <span aria-hidden="true">⌃</span></span></button>
   <div class="brand"><div><div class="eyebrow">MICRORREGIÕES · REGIONAL BARREIRO</div><h1>Mapa do Barreiro,<br class="desktop-br"> em um toque.</h1><p>Consulta rápida das áreas de fiscalização.<br>Encontre a micro, o bairro ou a avenida.</p><span class="tag"><i></i> 10 MICROS OPERACIONAIS</span></div><span class="mobileonly" style="display:none">10 micros</span></div>
   <div class="findbox">
    <span class="s-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg></span>
@@ -149,7 +192,7 @@ function initMap(){
  if(!window.L){$('fallback').classList.remove('loading');$('fallback-text').textContent='Prévia estática · conecte-se à internet para carregar o mapa navegável';$('offline-note').style.display='block';return}
  map=L.map('map',{zoomControl:false,preferCanvas:true,minZoom:9,maxZoom:19});L.control.zoom({position:'bottomright'}).addTo(map);
  map.attributionControl.addAttribution('Elaboração: Igor Spínola Mello (2026)');
- baseLight=L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{attribution:'© OpenStreetMap contributors © CARTO',maxZoom:19,subdomains:'abcd'}).addTo(map);
+ baseLight=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>',maxZoom:19}).addTo(map);
  baseSat=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'Tiles © Esri, Maxar, Earthstar Geographics',maxZoom:19});
  groupLayer=L.featureGroup();bairrosGroup=L.featureGroup();roadsGroup=L.featureGroup();
  for(const m of DATA.micros){const l=L.geoJSON({type:'Feature',geometry:m.geometry,properties:{}},{style:{fillColor:m.cor,color:'#223247',weight:2,fillOpacity:.47,opacity:.9}});l.bindTooltip('Micro '+m.id,{sticky:true,direction:'top',opacity:.96});l.on('click',()=>selectMicro(m.id,false));groupLayers.set(m.id,l);l.addTo(groupLayer)}groupLayer.addTo(map);
@@ -171,6 +214,7 @@ $('layerButton').addEventListener('click',()=>{const open=$('layerPanel').classL
 $('bairrosToggle').addEventListener('click',()=>setLayer('bairros',!showBairros));$('corredoresToggle').addEventListener('click',()=>setLayer('corredores',!showCorridors));
 $('baseLight').addEventListener('click',()=>{if(mapReady){map.removeLayer(baseSat);baseLight.addTo(map);baseLight.bringToBack()}$('baseLight').classList.add('chosen');$('baseSat').classList.remove('chosen')});
 $('baseSat').addEventListener('click',()=>{if(mapReady){map.removeLayer(baseLight);baseSat.addTo(map);baseSat.bringToBack()}$('baseSat').classList.add('chosen');$('baseLight').classList.remove('chosen')});
+$('sheetToggle').addEventListener('click',()=>{const expanded=$('sidebarRoot').classList.toggle('expanded');$('sheetToggle').setAttribute('aria-expanded',String(expanded));$('sheetToggle').setAttribute('aria-label',expanded?'Recolher lista de microrregiões':'Ver todas as microrregiões');const span=$('sheetToggle').querySelector('.sheet-toggle-text');span.firstChild.textContent=expanded?'Recolher lista ':'Ver todas as micros ';if(mapReady){setTimeout(()=>map.invalidateSize({pan:false}),270)}});
 renderGroups();initMap();
 })();
 </script>
