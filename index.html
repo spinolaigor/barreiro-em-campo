@@ -120,6 +120,7 @@
 }
 @media(max-width:360px){.detail-head h2{font-size:21px}.micro-quick{padding:8px 9px}}
 </style>
+<link rel="stylesheet" href="./ronda.css?v=1" />
 </head>
 <body>
 <div class="app">
@@ -257,7 +258,9 @@ $('bairrosToggle').addEventListener('click',()=>setLayer('bairros',!showBairros)
 $('baseLight').addEventListener('click',()=>{if(mapReady){map.removeLayer(baseSat);baseLight.addTo(map);baseLight.bringToBack()}$('baseLight').classList.add('chosen');$('baseSat').classList.remove('chosen')});
 $('baseSat').addEventListener('click',()=>{if(mapReady){map.removeLayer(baseLight);baseSat.addTo(map);baseSat.bringToBack()}$('baseSat').classList.add('chosen');$('baseLight').classList.remove('chosen')});
 $('sheetToggle').addEventListener('click',()=>{const expanded=$('sidebarRoot').classList.toggle('expanded');$('sheetToggle').setAttribute('aria-expanded',String(expanded));$('sheetToggle').setAttribute('aria-label',expanded?'Recolher lista de microrregiões':'Ver todas as microrregiões');const span=$('sheetToggle').querySelector('.sheet-toggle-text');span.firstChild.textContent=expanded?'Recolher lista ':'Ver todas as micros ';if(mapReady){setTimeout(()=>map.invalidateSize({pan:false}),270)}});
+window.BarreiroBridge={DATA,getMap:()=>map,getSelectedMicro:()=>selected,selectMicro:(id)=>selectMicro(id,true)};
 renderGroups();initMap();
 })();
 </script>
+<script src="./ronda.js?v=1" defer></script>
 </body></html>
