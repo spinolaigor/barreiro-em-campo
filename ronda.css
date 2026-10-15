@@ -36,3 +36,9 @@
 }
 @media(max-width:390px){.ronda-panel{bottom:185px;max-height:min(46dvh,340px)}.ronda-fab{top:72px;right:8px}.ronda-quick{bottom:183px}}
 @media(prefers-reduced-motion:reduce){.ronda-status-dot.pulse{box-shadow:none}}
+/* v0.4.0: histórico e lacunas do GPS */
+.ronda-version{display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-top:8px;font-size:10px;color:#6d8192}
+.ronda-version a{color:#25658b;font-weight:800;text-decoration:underline;text-underline-offset:2px}
+.ronda-gaps{font-size:11px;line-height:1.5;border:1px solid #eed9b6;color:#79571f;background:#fff8e9;border-radius:10px;padding:9px 11px;margin:0 0 12px}
+.ronda-gaps strong{font-weight:900}
+.ronda-gaps.clear{border-color:#d8e8e4;color:#55786e;background:#f5faf8}
