@@ -1,0 +1,13 @@
+AVISO DE DIREITOS E ATRIBUIÇÃO — BARREIRO EM CAMPO
+
+© 2026 Igor Spínola Mello — elaboração cartográfica, organização das dez microrregiões, edição de dados espaciais e estruturação de arquivos geográficos, na medida em que essas contribuições sejam legalmente protegidas e estejam sob sua titularidade.
+
+Todos os direitos sobre contribuições autorais originais reservados, salvo autorização expressa ou regime jurídico aplicável.
+
+DADOS-BASE: bases de bairros e demais informações geográficas provenientes da Prefeitura de Belo Horizonte (PBH) e de fontes de referência externas. Sua titularidade, licenciamento e obrigações de atribuição são preservados. Este aviso não atribui a particulares exclusividade sobre geometrias públicas, fatos geográficos ou informações oficiais.
+
+O uso ou divulgação no exercício de funções públicas pode estar sujeito às regras institucionais, contratuais ou legais pertinentes.
+
+É necessário manter as atribuições dos dados de mapa-base © OpenStreetMap/CARTO/Esri, quando exibidos, conforme termos dos provedores.
+
+Esta divisão territorial é informativa e não corresponde à homologação oficial de limites administrativos.
