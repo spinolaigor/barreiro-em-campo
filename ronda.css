@@ -42,3 +42,19 @@
 .ronda-gaps{font-size:11px;line-height:1.5;border:1px solid #eed9b6;color:#79571f;background:#fff8e9;border-radius:10px;padding:9px 11px;margin:0 0 12px}
 .ronda-gaps strong{font-weight:900}
 .ronda-gaps.clear{border-color:#d8e8e4;color:#55786e;background:#f5faf8}
+
+
+/* v0.4.2-beta: acompanhamento e diagnóstico GPS, sem ocupar o mapa */
+.ronda-follow{pointer-events:auto;position:absolute;right:18px;top:125px;background:#fff;color:#215273;border:1px solid #d4e4ed;min-height:38px;border-radius:999px;padding:8px 13px;font-size:12px;font-weight:850;box-shadow:0 4px 16px #152d3840}
+.ronda-follow[hidden]{display:none!important}
+.ronda-follow[aria-pressed="true"]{color:#096f5b;border-color:#add6cb;background:#effaf6}
+.ronda-follow:focus-visible{outline:3px solid #8acde7;outline-offset:2px}
+.ronda-lastfix{font-size:11px;color:#60778c;margin:0 0 10px;line-height:1.4}
+.ronda-sinal-atrasado{color:#a05a1c;font-weight:850}
+.ronda-sinal-atrasado .ronda-status-dot{background:#d68d23;box-shadow:0 0 0 4px #d68d2320}
+.ronda-diagnostico{border-top:1px solid #e8eef4;padding:9px 0;margin:0 0 12px;font-size:11px;line-height:1.45;color:#5f7180}
+.ronda-diagnostico summary{cursor:pointer;color:#2b6583;font-weight:800;min-height:29px;padding:7px 0}
+.ronda-diagnostico>div{background:#f2f7fa;padding:9px 10px;border-radius:9px;margin:6px 0}
+.ronda-diagnostico p{margin:6px 0 0}
+@media(max-width:700px){.ronda-follow{top:126px;right:12px;min-height:34px;font-size:11px;padding:7px 11px}}
+@media(max-width:390px){.ronda-follow{right:8px;top:117px}}
