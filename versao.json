@@ -1,0 +1,9 @@
+{
+  "name": "Barreiro em Campo",
+  "version": "0.4.0",
+  "stage": "piloto",
+  "release_date": "2026-10-15",
+  "description": "Rondas com histórico de falhas de GPS, exportações e rastreabilidade das alterações",
+  "author": "Igor Spínola Mello",
+  "note": "Metadados de versão do aplicativo; rondas individuais são armazenadas somente no navegador."
+}
