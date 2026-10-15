@@ -26,11 +26,12 @@ jobs:
       - name: Verificar código e conservação dos registros
         run: |
           node --check ronda.js
+          node --check localizacao-campo.js
           node --test tests/*.test.cjs
       - name: Preparar somente arquivos públicos
         run: |
           mkdir -p public
-          cp index.html ronda.js ronda.css micros.geojson CREDITOS.md LICENSE.txt README.md VERSOES.md versao.json RECUPERACAO.md public/
+          cp index.html ronda.js ronda.css localizacao-campo.js localizacao-campo.css micros.geojson CREDITOS.md LICENSE.txt README.md VERSOES.md versao.json RECUPERACAO.md public/
       - name: Configurar Pages
         uses: actions/configure-pages@v5
         with:

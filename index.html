@@ -121,6 +121,7 @@
 @media(max-width:360px){.detail-head h2{font-size:21px}.micro-quick{padding:8px 9px}}
 </style>
 <link rel="stylesheet" href="./ronda.css?v=0.4.1" />
+<link rel="stylesheet" href="./localizacao-campo.css?v=0.4.1-campo" />
 </head>
 <body>
 <div class="app">
@@ -252,7 +253,7 @@ function setDetailExpanded(expand){const panel=$('detail');panel.classList.toggl
 $('toggleBairros').addEventListener('click',()=>setDetailExpanded(!$('detail').classList.contains('mobile-expanded')));
 $('quickFocus').addEventListener('click',()=>{setDetailExpanded(false);if(selected)focusMicro(selected)});
 $('closeDetail').addEventListener('click',closeDetail);$('detailFocus').addEventListener('click',()=>{if(selected)focusMicro(selected)});$('copyDetails').addEventListener('click',copyDetails);
-$('locate').addEventListener('click',locate);$('share').addEventListener('click',share);
+$('locate').addEventListener('click',()=>{if(window.BarreiroLocalizacao)window.BarreiroLocalizacao.abrir();else locate()});$('share').addEventListener('click',share);
 $('layerButton').addEventListener('click',()=>{const open=$('layerPanel').classList.toggle('open');$('layerButton').setAttribute('aria-expanded',String(open))});
 $('bairrosToggle').addEventListener('click',()=>setLayer('bairros',!showBairros));$('corredoresToggle').addEventListener('click',()=>setLayer('corredores',!showCorridors));
 $('baseLight').addEventListener('click',()=>{if(mapReady){map.removeLayer(baseSat);baseLight.addTo(map);baseLight.bringToBack()}$('baseLight').classList.add('chosen');$('baseSat').classList.remove('chosen')});
@@ -263,4 +264,5 @@ renderGroups();initMap();
 })();
 </script>
 <script src="./ronda.js?v=0.4.1" defer></script>
+<script src="./localizacao-campo.js?v=0.4.1-campo" defer></script>
 </body></html>
