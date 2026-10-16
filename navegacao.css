@@ -23,6 +23,7 @@
   .sidebar.expanded .section-heading{padding:4px 18px 8px}
   .sidebar.expanded .group-list{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 13px)}
   .nav-scrim:not([hidden]){display:block;position:absolute;inset:0;z-index:610;background:#071f3130;pointer-events:auto}
+  .layer-panel{top:125px;z-index:745}
   .map-footer,.hint{display:none!important}
   .map-area .leaflet-bottom.leaflet-right,.map-area .leaflet-bottom.leaflet-left{bottom:calc(env(safe-area-inset-bottom,0px) + 15px)}
   html.micro-active .map-area .leaflet-bottom.leaflet-right,
