@@ -30,7 +30,7 @@ function harness(){
     document:{readyState:'loading',addEventListener(){}},L,console,Date,Math};
   const needle="  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',startApp,{once:true});";
   assert.ok(source.includes(needle));
-  const injected="  window.__testLive={showLivePosition,clearLivePosition,getFollow:()=>followLive};\n"+needle;
+  const injected="  window.__testLive={showLivePosition,clearLivePosition,inside,getFollow:()=>followLive};\n"+needle;
   vm.createContext(ctx);vm.runInContext(source.replace(needle,injected),ctx);
   return {api:ctx.window.__testLive,layers,events,stats};
 }
@@ -59,4 +59,14 @@ test('parar GPS remove marcador, sem apagar registros da ronda',()=>{
   h.api.clearLivePosition();
   assert.equal(h.stats.removed,2);
   assert.equal(h.layers.filter(x=>x.removed).length,2);
+});
+
+test('GeometryCollection considera seu polígono e ignora apenas o trecho linear',()=>{
+  const h=harness();
+  const geom={type:'GeometryCollection',geometries:[
+    {type:'LineString',coordinates:[[-44.1,-20.1],[-44,-20]]},
+    {type:'Polygon',coordinates:[[[-44.02,-20.02],[-43.98,-20.02],[-43.98,-19.98],[-44.02,-19.98],[-44.02,-20.02]]]}
+  ]};
+  assert.equal(h.api.inside({lat:-20,lng:-44},geom),true);
+  assert.equal(h.api.inside({lat:-21,lng:-44},geom),false);
 });
