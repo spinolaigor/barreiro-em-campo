@@ -481,6 +481,7 @@
       status.textContent=current.status==='paused'?'Pausada':(texts[gpsState]||'Procurando sinal…');
     }
   }
+  window.BarreiroRondaUI={fecharPainel(){panelOpen=false;drawUI()}};
   function startApp(){
     load();buildUI();if(!storageOk)panelOpen=true;drawUI();
     if(current && current.status==='paused'){
