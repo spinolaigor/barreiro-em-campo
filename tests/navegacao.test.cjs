@@ -31,6 +31,14 @@ function harness(){
     ['.sidebar .findbox',new Element()]
   ]);
   let mobile=true;
+  const register=child=>{
+    if(child.id)els.set(child.id,child);
+    for(const hit of (child.innerHTML||'').matchAll(/id="([^"]+)"/g))id(hit[1]);
+  };
+  for(const target of [id('sidebarRoot'),...selectors.values()]){
+    for(const method of ['appendChild','insertBefore','insertAdjacentElement'])
+      target[method]=function(child){register(child);return this};
+  }
   const document={
     readyState:'complete',
     documentElement:new Element(),
@@ -39,13 +47,14 @@ function harness(){
     createElement:()=>new Element(),
     addEventListener(){}
   };
-  const window={matchMedia:()=>({matches:mobile}),addEventListener(){},
+  const windowEvents=new Map();
+  const window={matchMedia:()=>({matches:mobile}),addEventListener(type,cb){(windowEvents.get(type)||windowEvents.set(type,[]).get(type)).push(cb)},
     setTimeout:fn=>fn(),BarreiroLocalizacao:{fechar(){this.closed=true}},
     BarreiroRondaUI:{fecharPainel(){this.closed=true}}
   };
   const ctx={document,window};
   vm.runInNewContext(ui,ctx);
-  return {id,doc:document,window,setMobile:b=>mobile=b};
+  return {id,doc:document,window,setMobile:b=>{mobile=b;for(const cb of windowEvents.get('resize')||[])cb()}};
 }
 
 test('os arquivos da navegação estão carregados no mapa atual',()=>{
