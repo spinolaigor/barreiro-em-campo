@@ -104,8 +104,8 @@ test('fora do celular a navegação lateral continua acessível',()=>{
 
 test('scripts embutidos do mapa e navegação externa têm sintaxe válida',()=>{
   assert.doesNotThrow(()=>new vm.Script(ui));
-  const scripts=[...html.matchAll(/<script(?:\\s[^>]*)?>([\\s\\S]*?)<\\/script>/g)]
-    .map(match=>match[1]).filter(code=>code.trim());
+  const scripts=html.split('<script>').slice(1)
+    .map(part=>part.split('</script>')[0]).filter(code=>code.trim());
   assert.equal(scripts.length,2);
   for(const code of scripts)assert.doesNotThrow(()=>new vm.Script(code));
 });
