@@ -14,8 +14,8 @@
   function selectedRound(){
     return (gps()?.listarBuracos?.()||[])[0]||null;
   }
-  function reportRows(){
-    const round=selectedRound();
+  function reportRows(selected){
+    const round=selected||selectedRound();
     return (round?.potholes||[]).map(p=>({...p,ronda:round.id,micro:round.micro,startedAt:round.startedAt}))
       .sort((a,b)=>a.t-b.t);
   }
@@ -29,9 +29,10 @@
   }
   function csv(list){
     const quote=x=>'"'+String(x??'').replace(/"/g,'""')+'"';
-    const fields=['ronda','codigo','data_hora','micro','bairro','logradouro_referencia','numero_aproximado','latitude','longitude','precisao_gps_m'];
+    const fields=['ronda','codigo','data_hora','micro','bairro','logradouro_referencia','numero_aproximado','latitude','longitude','precisao_gps_m','link_google_maps'];
     return '\uFEFF'+[fields.join(';'),...list.map(p=>[p.ronda,p.codigo,new Date(p.t).toISOString(),
-      p.micro,p.bairro,p.logradouro,p.numeroAproximado,p.lat,p.lng,p.acc].map(quote).join(';'))].join('\r\n');
+      p.micro,p.bairro,p.logradouro,p.numeroAproximado,p.lat,p.lng,p.acc,
+      'https://www.google.com/maps?q='+p.lat+','+p.lng].map(quote).join(';'))].join('\r\n');
   }
   function report(list){
     const grouped=groupRows(list);
@@ -58,9 +59,11 @@
   function info(msg){
     lastStatus=msg;const el=byId('holeInfo');if(el)el.textContent=msg;
   }
-  function makePair(){
-    const round=selectedRound(),list=reportRows();
-    if(!round || !list.length)return null;
+  function makePair(selected){
+    const round=typeof selected==='string'
+      ?(gps()?.obterRonda?.(selected)||null):(selected||selectedRound());
+    const list=reportRows(round);
+    if(!round)return null;
     if(!window.BarreiroPDF?.create)throw Error('Gerador PDF indisponível');
     const tag=new Date(round.startedAt).toISOString().replace(/[:.]/g,'-').slice(0,19)+'_Micro_'+round.micro;
     const filePDF=new File([window.BarreiroPDF.create(list,round)],
@@ -75,13 +78,16 @@
     document.body.appendChild(a);a.click();a.remove();
     setTimeout(()=>URL.revokeObjectURL(url),30000);
   }
-  function sendReport(){
-    const pendentes=reportRows().filter(p=>!p.logradouro||!p.numeroAproximado);
+  function sendReport(roundId=null){
+    const round=roundId?gps()?.obterRonda?.(roundId):selectedRound();
+    if(!round){info('Ronda não localizada.');return;}
+    const getRows=()=>reportRows(roundId?gps()?.obterRonda?.(roundId):selectedRound());
+    const pendentes=getRows().filter(p=>!p.logradouro||!p.numeroAproximado);
     if(pendentes.length){
       info('Identificando rua e número dos '+pendentes.length+' registro(s). Aguarde a consulta local.');
-      Promise.resolve(window.BarreiroEnderecosRonda?.completar?.(selectedRound()?.id))
+      Promise.resolve(window.BarreiroEnderecosRonda?.completar?.(round.id))
         .then(()=>{
-          const faltam=reportRows().filter(p=>!p.logradouro||!p.numeroAproximado);
+          const faltam=getRows().filter(p=>!p.logradouro||!p.numeroAproximado);
           if(showPanel)renderPanel();
           info(faltam.length?'Existem '+faltam.length+' endereço(s) pendente(s). Corrija nas marcações abaixo antes de compartilhar.':
             'Ruas e números preenchidos. Toque novamente para compartilhar PDF e CSV.');
@@ -89,15 +95,15 @@
       return;
     }
     let files;
-    try{files=makePair();}
+    try{files=makePair(roundId?gps()?.obterRonda?.(roundId):round);}
     catch(e){info('Não foi possível preparar os dois arquivos. Confira o navegador.');return;}
-    if(!files){info('Esta ronda não tem buracos para enviar.');return;}
+    if(!files){info('Não há ronda selecionada.');return;}
     // A escolha do destinatário permanece com o fiscal. Arquivos locais nunca são enviados sem ação.
     if(navigator.share && navigator.canShare?.({files})){
       info('Escolha o destinatário no compartilhamento do celular.');
       try{
         Promise.resolve(navigator.share({title:'Barreiro em Campo — relatório da ronda',
-          text:'Levantamento de buracos da micro '+selectedRound().micro,files}))
+          text:'Relatório de execução da ronda · Micro '+round.micro,files}))
           .then(()=>info('Compartilhamento concluído no dispositivo.'))
           .catch(err=>{
             if(err?.name==='AbortError'){info('Compartilhamento cancelado.');return;}
@@ -203,5 +209,5 @@
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup,{once:true});
   else setup();
   // Métodos puros para teste, sem acesso aos registros particulares.
-  window.BarreiroBuracosFormat={csv,report,groupRows,makePair,reportRows};
+  window.BarreiroBuracosFormat={csv,report,groupRows,makePair,reportRows,sendReport};
 })();
