@@ -57,13 +57,14 @@
     for(const p of entries){
       ensure(48);
       if(y===H-48-26-22-16-16-23-23)header();
-      write(short(p.codigo||'?',12)+'  '+short(p.bairro||'Não identificado',42),LEFT,9,true);
-      write(short(p.logradouro||'Via não identificada',45)+
-        (p.numeroAproximado?'  prox. n. '+short(p.numeroAproximado,12):''),LEFT,8);
+      write(short(p.codigo||'?',12)+'  '+short(p.bairro||'Não identificado',39),LEFT,9,true);
       const lat=numeric(p.lat),lng=numeric(p.lng);
       write((lat===null||lng===null?'-':lat.toFixed(6)+', '+lng.toFixed(6)),314,8);
+      y-=13;
+      write(short(p.logradouro||'Via não identificada',42)+
+        (p.numeroAproximado?'  prox. n. '+short(p.numeroAproximado,12):''),LEFT,8);
       write('GPS +/- '+safe(Math.round(numeric(p.acc)||0))+' m    '+stamp(p.t),314,8);
-      y-=24;rule(y+3);y-=10;
+      y-=20;rule(y+5);y-=10;
     }
     y-=4;ensure(44);
     write('LOGRADOURO E NUMERO: referencias aproximadas informadas quando disponiveis.',LEFT,8);
