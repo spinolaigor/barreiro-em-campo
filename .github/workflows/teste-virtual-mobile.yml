@@ -23,6 +23,7 @@ jobs:
           node --check ronda.js
           node --check ocorrencias.js
           node --check tests/mobile-virtual.cjs
+          node --check relatorio-pdf.js
           node --test tests/*.test.cjs
       - name: Testar fluxo integral em Chromium 390x844 com GPS virtual
         run: node tests/mobile-virtual.cjs
@@ -34,5 +35,6 @@ jobs:
           path: |
             tests/mobile-virtual-ronda.png
             tests/mobile-virtual-painel.png
+            tests/_evidencias/
           if-no-files-found: ignore
-          retention-days: 7
+          retention-days: 14
