@@ -1,6 +1,6 @@
-# Homologação em Android — Barreiro em Campo v0.4.2-beta
+# Teste de campo no Android — Barreiro em Campo v0.4.2-beta
 
-Esta é uma prévia em branch. O site público permanece na v0.4.1. Teste a versão desta branch por HTTPS em ambiente controlado; não use o site público para validar estas mudanças.
+A v0.4.2-beta foi autorizada para publicação experimental no site https://spinolaigor.github.io/barreiro-em-campo/. Seu funcionamento em aparelho real **ainda não foi homologado**. Use uma ronda de teste, faça backup prévio dos registros locais e não confunda o teste com levantamento operacional validado.
 
 ## Checklist em campo
 
