@@ -141,7 +141,6 @@ async function main(){
     await page.locator('[data-ronda="resume"]').click();
     await wait(()=>page.locator('#holeQuick').isVisible(),'botão visível após retomar');
     await page.locator('#rondaFab').click();
-    await page.locator('#rondaFab').click();
     await page.locator('[data-ronda="finish"]').click();
     await wait(()=>page.evaluate(()=>{
       const d=JSON.parse(localStorage.getItem('barreiro.rondas.v1'));
