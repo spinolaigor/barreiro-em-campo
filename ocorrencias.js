@@ -10,8 +10,14 @@
     (r.potholes||[]).map(p=>({...p,ronda:r.id,micro:r.micro,startedAt:r.startedAt}))))
     .sort((a,b)=>a.t-b.t);
   let showPanel=false,loading=false,lastStatus='',lastCount=-1;
+  // Relatório de uma única ronda: a ativa ou, após concluir, a mais recente.
+  function selectedRound(){
+    return (gps()?.listarBuracos?.()||[])[0]||null;
+  }
   function reportRows(){
-    return rows();
+    const round=selectedRound();
+    return (round?.potholes||[]).map(p=>({...p,ronda:round.id,micro:round.micro,startedAt:round.startedAt}))
+      .sort((a,b)=>a.t-b.t);
   }
   function groupRows(list){
     const m=new Map();
@@ -52,33 +58,54 @@
   function info(msg){
     lastStatus=msg;const el=byId('holeInfo');if(el)el.textContent=msg;
   }
-  function downloadCSV(){
-    const list=reportRows();
-    if(!list.length){info('Nenhum buraco registrado para exportar.');return;}
-    const blob=new Blob([csv(list)],{type:'text/csv;charset=utf-8'});
-    const uri=URL.createObjectURL(blob),a=document.createElement('a');
-    a.href=uri;a.download='Barreiro_Buracos_'+new Date().toISOString().slice(0,10)+'.csv';
-    document.body.appendChild(a);a.click();a.remove();
-    setTimeout(()=>URL.revokeObjectURL(uri),30000);
-    info('CSV preparado. Confira a pasta Downloads.');
+  function makePair(){
+    const round=selectedRound(),list=reportRows();
+    if(!round || !list.length)return null;
+    if(!window.BarreiroPDF?.create)throw Error('Gerador PDF indisponível');
+    const tag=new Date(round.startedAt).toISOString().slice(0,10)+'_Micro_'+round.micro;
+    const filePDF=new File([window.BarreiroPDF.create(list,round)],
+      'Barreiro_Buracos_'+tag+'.pdf',{type:'application/pdf'});
+    const fileCSV=new File([csv(list)],
+      'Barreiro_Buracos_'+tag+'.csv',{type:'text/csv;charset=utf-8'});
+    return [filePDF,fileCSV];
   }
-  function printReport(){
-    const list=reportRows();
-    if(!list.length){info('Nenhum buraco registrado para gerar relatório.');return;}
-    const win=window.open?.('','_blank');
-    if(!win){info('Permita abertura da aba do relatório e use Imprimir / Salvar como PDF.');return;}
-    win.document.open();win.document.write(report(list));win.document.close();
+  function saveFile(file){
+    const url=URL.createObjectURL(file),a=document.createElement('a');
+    a.href=url;a.download=file.name;
+    document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),30000);
+  }
+  function sendReport(){
+    let files;
+    try{files=makePair();}
+    catch(e){info('Não foi possível preparar os dois arquivos. Confira o navegador.');return;}
+    if(!files){info('Esta ronda não tem buracos para enviar.');return;}
+    // A escolha do destinatário permanece com o fiscal. Arquivos locais nunca são enviados sem ação.
+    if(navigator.share && navigator.canShare?.({files})){
+      info('Escolha o destinatário no compartilhamento do celular.');
+      try{
+        Promise.resolve(navigator.share({title:'Barreiro em Campo — relatório da ronda',
+          text:'Levantamento de buracos da micro '+selectedRound().micro,files}))
+          .then(()=>info('Compartilhamento concluído no dispositivo.'))
+          .catch(err=>{if(err?.name!=='AbortError')info('Compartilhamento indisponível. Use o download dos dois arquivos.');});
+      }catch(e){info('Compartilhamento indisponível no navegador.');}
+    }else{
+      // Alternativa sem Web Share API: os DOIS arquivos, sem escolher formato.
+      files.forEach(saveFile);
+      info('PDF e planilha baixados juntos. Abra Downloads para compartilhar ambos.');
+    }
   }
   function renderPanel(){
     const body=byId('holeContent');
     if(!body)return;
-    const list=reportRows();
+    const list=reportRows(),round=selectedRound();
     const groups=groupRows(list);
     const last=list.slice(-10).reverse();
-    body.innerHTML='<p><b>'+list.length+' buraco(s)</b> em '+groups.length+
-      ' agrupamento(s) de bairro/via.</p><p class="hole-help">O ponto GPS é obrigatório. O nome da rua e o número são referências opcionais; podem ser preenchidos depois.</p>'+
-      '<div class="hole-export-actions"><button type="button" data-hole="csv">Exportar CSV</button>'+
-      '<button type="button" data-hole="pdf">Relatório / PDF</button></div>'+
+    body.innerHTML='<p><b>'+list.length+' buraco(s) nesta ronda</b> · Micro '+esc(round?.micro||'-')+'.</p>'+
+      '<p class="hole-help">Rua e número são opcionais. Um toque em compartilhar prepara sempre os dois arquivos.</p>'+
+      '<div class="hole-export-actions"><button type="button" data-hole="send" id="sendHoleReport">'+
+      (navigator.share&&navigator.canShare?'Compartilhar relatório':'Baixar relatório completo')+
+      ' (PDF + planilha)</button></div>'+
       (last.length?'<strong>Últimas marcações</strong><div class="hole-list">'+last.map(p=>
         '<div class="hole-item"><b>'+esc(p.codigo)+'</b> · '+esc(p.bairro||'Bairro não identificado')+
         '<div>'+esc(p.logradouro||'Via a identificar')+
@@ -102,7 +129,7 @@
     btn.hidden=!active||roundPanelOpen;
     btn.disabled=!active||loading;
     btn.textContent=loading?'Localizando…':'＋ Buraco';
-    const n=rows().length;
+    const n=reportRows().length;
     toggle.textContent='Buracos ('+n+') '+(showPanel?'▴':'▾');
     pane.hidden=!showPanel;
     if(showPanel && lastCount!==n)renderPanel();
@@ -126,8 +153,7 @@
     byId('holePanel').addEventListener('click',event=>{
       const b=event.target.closest('[data-hole]');
       if(!b)return;
-      if(b.dataset.hole==='csv')downloadCSV();
-      if(b.dataset.hole==='pdf')printReport();
+      if(b.dataset.hole==='send')sendReport();
       if(b.dataset.hole==='edit'){
         const list=rows(),p=list.find(x=>x.ronda===b.dataset.ronda&&x.codigo===b.dataset.code);
         if(!p||!window.prompt)return;
@@ -147,5 +173,5 @@
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup,{once:true});
   else setup();
   // Métodos puros para teste, sem acesso aos registros particulares.
-  window.BarreiroBuracosFormat={csv,report,groupRows};
+  window.BarreiroBuracosFormat={csv,report,groupRows,makePair,reportRows};
 })();
