@@ -19,6 +19,7 @@ function harness(){
     addTo(){layers.push(this);return this},
     setLatLng(ll){this.latLng=ll;return this},
     setRadius(v){this.radius=v;return this},
+    setStyle(v){this.style=v;return this},
     bringToFront(){return this}
   });
   const L={
@@ -36,26 +37,26 @@ function harness(){
 }
 
 test('posição ao vivo cria marcador e círculo de precisão, atualizados sem duplicação',()=>{
-  const h=harness();h.api.showLivePosition({lat:-20,lng:-44,acc:12});
+  const h=harness();h.api.showLivePosition({lat:-20,lng:-44,acc:12,t:Date.now()});
   assert.equal(h.layers.length,2);
   assert.equal(h.layers.find(x=>x.type==='marker').latLng[0],-20);
   assert.equal(h.stats.views,1);
-  h.api.showLivePosition({lat:-20.001,lng:-44.001,acc:8});
+  h.api.showLivePosition({lat:-20.001,lng:-44.001,acc:8,t:Date.now()});
   assert.equal(h.layers.length,2);
   assert.equal(h.layers.find(x=>x.type==='marker').latLng[0],-20.001);
   assert.equal(h.layers.find(x=>x.type==='accuracy').radius,8);
   assert.equal(h.stats.pans,1);
 });
 test('arrastar mapa interrompe seguimento mas atualiza o marcador',()=>{
-  const h=harness();h.api.showLivePosition({lat:-20,lng:-44,acc:8});
+  const h=harness();h.api.showLivePosition({lat:-20,lng:-44,acc:8,t:Date.now()});
   h.events.dragstart();
   assert.equal(h.api.getFollow(),false);
-  h.api.showLivePosition({lat:-20.002,lng:-44.002,acc:7});
+  h.api.showLivePosition({lat:-20.002,lng:-44.002,acc:7,t:Date.now()});
   assert.equal(h.stats.pans,0);
   assert.equal(h.layers.find(x=>x.type==='marker').latLng[0],-20.002);
 });
 test('parar GPS remove marcador, sem apagar registros da ronda',()=>{
-  const h=harness();h.api.showLivePosition({lat:-20,lng:-44,acc:8});
+  const h=harness();h.api.showLivePosition({lat:-20,lng:-44,acc:8,t:Date.now()});
   h.api.clearLivePosition();
   assert.equal(h.stats.removed,2);
   assert.equal(h.layers.filter(x=>x.removed).length,2);

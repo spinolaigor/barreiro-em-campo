@@ -46,6 +46,7 @@
       setOpen(true);
     }
     function hide(){setOpen(false)}
+    window.BarreiroNavegacao={fechar:hide};
     toggle.addEventListener('click',()=>sidebar.classList.contains('expanded')?hide():show());
     document.getElementById('panelClose').addEventListener('click',hide);
     scrim.addEventListener('click',hide);

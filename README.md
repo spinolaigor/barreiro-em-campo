@@ -2,6 +2,8 @@
 
 **Site em operação (piloto):** https://spinolaigor.github.io/barreiro-em-campo/ · **Versão atual:** v0.4.1 — [histórico de versões](VERSOES.md)
 
+**Prévia de trabalho:** v0.4.2-beta está somente em branch e PR. O site acima continua na v0.4.1 até homologação e aprovação para publicação.
+
 Projeto público de consulta cartográfica das **10 microrregiões da Regional Barreiro (Belo Horizonte)**, com busca por micro, bairro ou avenida, camadas territoriais e localização aproximada mediante permissão do navegador.
 
 **Elaboração cartográfica e estruturação das camadas vetoriais derivadas:** Igor Spínola Mello (2026).  

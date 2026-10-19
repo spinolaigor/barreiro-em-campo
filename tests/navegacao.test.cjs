@@ -86,6 +86,14 @@ test('botão Painel abre lista e fecha outras consultas de campo',()=>{
   assert.equal(h.id('panelScrim').hidden,true);
 });
 
+test('seleção por outra ferramenta fecha também o bloqueio e restaura o mapa',()=>{
+  const h=harness();h.id('panelToggle').click();
+  h.window.BarreiroNavegacao.fechar();
+  assert.equal(h.id('sidebarRoot').classList.contains('expanded'),false);
+  assert.equal(h.id('panelScrim').hidden,true);
+  assert.equal(h.doc.documentElement.classList.contains('nav-panel-open'),false);
+});
+
 test('as funções originais podem ser acessadas sem duplicar lógica',()=>{
   const h=harness();h.id('panelToggle').click();
   h.id('panelHome').click();

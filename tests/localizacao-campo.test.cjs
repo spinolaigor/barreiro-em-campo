@@ -25,11 +25,11 @@ function harness(bairroGeometry=null){
     setInterval(){return 1},clearInterval(){}};
   const target="  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup,{once:true});";
   assert.ok(source.includes(target));
-  const replacement="  window.__where_test={position,gpsError,territory,stop,setOpened:v=>opened=v};\n"+target;
+  const replacement="  window.__where_test={position,gpsError,territory,stop,open,setOpened:v=>opened=v};\n"+target;
   vm.createContext(ctx);vm.runInContext(source.replace(target,replacement),ctx);
   const api=ctx.window.__where_test;
   api.setOpened(true);
-  return {api,node,stats:()=>({view,move}),emit:(lat,lng,accuracy=10,t=Date.now())=>
+  return {api,node,window:ctx.window,stats:()=>({view,move}),emit:(lat,lng,accuracy=10,t=Date.now())=>
     api.position({coords:{latitude:lat,longitude:lng,accuracy},timestamp:t})};
 }
 
@@ -73,4 +73,12 @@ test('bairro GeometryCollection com Polygon é reconhecido pelo GPS',()=>{
   ]};
   const h=harness(geom);h.emit(-20,-44);
   assert.equal(h.node('whereBairro').textContent,'Bairro de Teste');
+});
+
+test('localização durante ronda ativa reutiliza o rastreador da ronda',()=>{
+  const h=harness();let calls=0;
+  h.window.BarreiroRondaUI={ativa:true,mostrarLocalizacao(){calls++}};
+  h.api.open();
+  assert.equal(calls,1);
+  assert.equal(h.node('wherePanel').hidden,true);
 });

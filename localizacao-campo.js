@@ -121,7 +121,14 @@
     }catch(e){gpsError({code:0});}
   }
   function open(){
+    if(window.BarreiroRondaUI?.ativa){
+      window.BarreiroRondaUI.mostrarLocalizacao();return;
+    }
     if(!$('wherePanel'))return;
+    window.BarreiroNavegacao?.fechar?.();
+    window.BarreiroRondaUI?.fecharPainel?.();
+    $('layerPanel')?.classList.remove('open');
+    $('layerButton')?.setAttribute('aria-expanded','false');
     opened=true;$('wherePanel').hidden=false;
     $('whereFloating').setAttribute('aria-expanded','true');
     start();
