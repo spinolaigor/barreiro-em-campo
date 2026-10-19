@@ -120,7 +120,7 @@
     const list=reportRows(),round=selectedRound();
     const groups=groupRows(list);
     const last=list.slice(-10).reverse();
-    const faltam=list.filter(p=>!p.logradouro||!p.numeroAproximado);
+    const faltam=list.filter(p=>(!p.logradouro||!p.numeroAproximado)&&!last.includes(p));
     body.innerHTML='<p><b>'+list.length+' buraco(s) nesta ronda</b> · Micro '+esc(round?.micro||'-')+'.</p>'+
       '<p class="hole-help">Rua e nº aproximado são preenchidos automaticamente com o cadastro PBH. Confira esquinas e corrija se necessário.</p>'+
       '<div class="hole-export-actions"><button type="button" data-hole="send" id="sendHoleReport">'+
