@@ -1,9 +1,9 @@
 {
   "name": "Barreiro em Campo",
-  "version": "0.4.5-beta",
+  "version": "0.4.6-beta",
   "stage": "piloto público em validação de campo",
   "release_date": "2026-10-19",
-  "description": "GPS, marcação de buracos, referência cadastral automática de rua e número, PDF + CSV",
+  "description": "GPS e buracos com endereço aproximado, relatório executivo de ronda com mapa e CSV",
   "author": "Igor Spínola Mello",
   "note": "Ensaio Chromium móvel com GPS simulado, leitura real de PDF e CSV e compartilhamento de dois arquivos aprovado; sinal GPS físico ainda depende de teste Android."
 }

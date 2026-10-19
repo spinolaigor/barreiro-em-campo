@@ -1,6 +1,18 @@
 # Barreiro em Campo — Histórico de versões
 
-**Versão atual: v0.4.5-beta (piloto de endereçamento automático)** — 19 de outubro de 2026.
+**Versão atual: v0.4.6-beta (relatório executivo de ronda)** — 19 de outubro de 2026.
+
+## v0.4.6-beta — Relatório de execução da ronda
+- Ronda finalizada exibe ação principal **Gerar relatório (PDF + CSV)**, inclusive no histórico.
+- PDF A4 com mapa da micro, malha de ruas quando disponível, percurso GPS segmentado nas pausas, pontos de buracos e indicadores: km, tempo ativo, total e distribuição por bairro.
+- Relação individual por bairro e logradouro, com **um ID por buraco**, mesmo quando endereço e GPS coincidirem.
+- Contagem visível para pontos sobrepostos no mapa, preservando seus registros.
+- CSV contém ID, horário, bairro, rua, número aproximado, posição GPS e link Google Maps.
+- Exportação por ID: rondas distintas não são misturadas.
+- Backup completo JSON preservado em **Segurança e recuperação**. Pausa, retomada e formato de armazenamento local inalterados.
+- Simulação em navegador e testes automatizados; GPS físico segue sujeito à verificação de campo.
+
+
 
 ## v0.4.5-beta — Rua e número cadastral aproximados
 - Base pública PBH/CTM de 04/05/2026, reduzida à Regional Barreiro: 94.444 referências numéricas e 7.321 segmentos de vias, distribuídos em arquivo gzip (~1 MB).

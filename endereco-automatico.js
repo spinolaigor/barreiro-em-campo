@@ -107,6 +107,7 @@
   async function aguardarPendentes(){await Promise.allSettled([...pendentes]);}
   window.BarreiroEndereco={buscar,preparar,aguardarPendentes,
     get pronto(){return !!dados;},
+    get vias(){return dados?.vias||[];},
     // funções puras para teste; nenhuma posição do fiscal é exposta ao servidor.
     __teste:{utm23s,calcular,distanciaSegmento2}};
 })();
