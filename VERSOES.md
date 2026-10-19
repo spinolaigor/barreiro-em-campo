@@ -1,6 +1,16 @@
 # Barreiro em Campo — Histórico de versões
 
-**Versão atual: v0.4.4-beta (piloto de relatório de um toque)** — 19 de outubro de 2026.
+**Versão atual: v0.4.5-beta (piloto de endereçamento automático)** — 19 de outubro de 2026.
+
+## v0.4.5-beta — Rua e número cadastral aproximados
+- Base pública PBH/CTM de 04/05/2026, reduzida à Regional Barreiro: 94.444 referências numéricas e 7.321 segmentos de vias, distribuídos em arquivo gzip (~1 MB).
+- Após registrar + Buraco, identificações são resolvidas em segundo plano **sem enviar o GPS a serviços externos**; dados locais e rondas anteriores são preservados.
+- A direção recente do trajeto é utilizada quando disponível para desempate em cruzamentos.
+- A exportação PDF e CSV exige que rua e número tenham sido preenchidos; faltantes permanecem editáveis pelo fiscal.
+- Pontos em cruzamentos, imóveis sem existência confirmada e números cadastrados mais distantes devem ser conferidos em campo. A referência é operacional, não endereço exato.
+- Testes de unidade e validação física Android ainda exigem verificação antes da homologação.
+
+
 
 ## v0.4.4-beta — Relatório único (PDF + CSV)
 - **Um único botão** na seção Buracos prepara dois arquivos da ronda, sem seleção de formatos: PDF e planilha CSV.

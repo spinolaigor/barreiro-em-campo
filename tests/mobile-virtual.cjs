@@ -64,6 +64,17 @@ async function main(){
     await page.goto('http://127.0.0.1:'+port+'/',{waitUntil:'domcontentloaded'});
     await wait(()=>page.evaluate(()=>!!window.L&&!!window.BarreiroRondaUI?.marcarBuraco&&!!window.BarreiroBuracosFormat),
       'Leaflet e extensões carregados');
+    // Verifica a cadeia completa: download, gzip, cadastro e numeração no navegador.
+    const cadastro=await page.evaluate(async()=>{
+      const base=await window.BarreiroEndereco.preparar();
+      const ref=await window.BarreiroEndereco.buscar(-20.0190817,-44.033925);
+      return {vias:base.vias.length,numeros:base.numeros.length,
+        logradouro:ref?.logradouro,numero:ref?.numeroAproximado};
+    });
+    assert.equal(cadastro.vias,7321,'trechos georreferenciados carregados');
+    assert.equal(cadastro.numeros,94444,'números CTM carregados');
+    assert.match(cadastro.logradouro,/FLOR DE PESSEGO/);
+    assert.equal(cadastro.numero,'55');
     assert.equal(await page.locator('#holeQuick').isHidden(),true,'sem ronda, botão buraco fica oculto');
     assert.equal(await page.locator('#panelToggle').isVisible(),true,'controle painel visível');
     await page.locator('#panelToggle').click();
@@ -151,8 +162,8 @@ async function main(){
     }
     let saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('barreiro.rondas.v1')).current);
     assert.equal(saved.potholes[0].codigo,'B001');
-    assert.equal(saved.potholes[0].logradouro,null);
-    assert.equal(saved.potholes[0].numeroAproximado,null);
+    assert.ok(saved.potholes[0].logradouro===null||typeof saved.potholes[0].logradouro==='string');
+    assert.ok(saved.potholes[0].numeroAproximado===null||/^\d/.test(saved.potholes[0].numeroAproximado));
     assert.equal(saved.visits.length,0,'buraco não é vistoria genérica');
     assert.equal(saved.potholes[0].micro,'01');
     await page.locator('#rondaFab').click();

@@ -30,16 +30,22 @@ jobs:
           node --check navegacao.js
           node --check ocorrencias.js
           node --check relatorio-pdf.js
+          node --check endereco-automatico.js
+          node --check endereco-aplicador.js
           node --test tests/*.test.cjs
       - name: Preparar somente arquivos públicos
         run: |
           mkdir -p public
-          cp index.html ronda.js ronda.css localizacao-campo.js localizacao-campo.css navegacao.js navegacao.css ocorrencias.js ocorrencias.css relatorio-pdf.js micros.geojson CREDITOS.md LICENSE.txt README.md VERSOES.md versao.json RECUPERACAO.md public/
+          cp index.html ronda.js ronda.css localizacao-campo.js localizacao-campo.css navegacao.js navegacao.css ocorrencias.js ocorrencias.css relatorio-pdf.js endereco-automatico.js endereco-aplicador.js micros.geojson CREDITOS.md LICENSE.txt README.md VERSOES.md versao.json RECUPERACAO.md public/
+          mkdir -p public/dados
+          cp dados/enderecos-barreiro-20260504.json.gz public/dados/
           test -s public/navegacao.js
           test -s public/navegacao.css
           test -s public/ocorrencias.js
           test -s public/ocorrencias.css
           test -s public/relatorio-pdf.js
+          test -s public/endereco-automatico.js
+          test -s public/dados/enderecos-barreiro-20260504.json.gz
       - name: Configurar Pages
         uses: actions/configure-pages@v5
         with:

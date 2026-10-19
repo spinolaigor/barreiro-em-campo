@@ -8,7 +8,7 @@
   if (!bridge || !bridge.DATA || !Array.isArray(bridge.DATA.micros)) return;
 
   const KEY = 'barreiro.rondas.v1'; // Compatível com rondas salvas anteriormente
-  const APP_VERSION = '0.4.4-beta';
+  const APP_VERSION = '0.4.5-beta';
   const GPS_FRESH_MS = 30000;
   const GPS_DISPLAY_MAX_ACC = 250;
   const COLORS = { navy: '#142c44', blue: '#147baf', green: '#138065' };
@@ -210,7 +210,7 @@
     current.visits.forEach((p,i)=> L.circleMarker([p.lat,p.lng],{radius:7,weight:2,color:'#fff',fillColor:COLORS.green,fillOpacity:1})
       .bindPopup(`<b>Vistoria ${i+1}</b><br>${esc(p.bairro)}<br>${esc(stamp(p.t))}`).addTo(markerLayer));
     (current.potholes||[]).forEach((p,i)=>L.circleMarker([p.lat,p.lng],{radius:7,weight:2,color:'#fff',fillColor:'#c34830',fillOpacity:1})
-      .bindPopup('<b>Buraco '+esc(p.codigo||'#'+(i+1))+'</b><br>'+esc(p.bairro||'Bairro a identificar')+'<br>'+esc(p.logradouro||'Via a identificar')+'<br>GPS ±'+Math.round(p.acc)+' m').addTo(markerLayer));
+      .bindPopup('<b>Buraco '+esc(p.codigo||'#'+(i+1))+'</b><br>'+esc(p.bairro||'Bairro a identificar')+'<br>'+esc(p.logradouro||'Via a identificar')+'<br>'+(p.numeroAproximado?'Próximo ao nº '+esc(p.numeroAproximado)+'<br>':'')+'GPS ±'+Math.round(p.acc)+' m').addTo(markerLayer));
     (current.gaps||[]).forEach((g,i)=>{
       if(!Number.isFinite(g.lat)||!Number.isFinite(g.lng))return;
       L.circleMarker([g.lat,g.lng],{radius:6,weight:2,color:'#fff',fillColor:'#d99024',fillOpacity:1})
@@ -412,9 +412,17 @@
     if(!storageOk || !current || current.status!=='recording' || !freshFix(p) ||
        !Number.isFinite(p.acc) || p.acc>75 || !inside(p,microById.get(current.micro).geometry))return null;
     const n=(current.potholeSeq||0)+1;
+    // Direção observada na trilha recente: desempate de ruas em cruzamentos.
+    const trilha=current.points||[],ultimo=trilha.at(-1);
+    const anterior=ultimo&&trilha.slice(-15,-1).reverse().find(q=>q.seg===ultimo.seg &&
+      ultimo.t-q.t<=90000 && haversine(q,ultimo)>=10);
+    const direcao=(ultimo&&anterior&&haversine(ultimo,p)<30)
+      ? {dx:Math.round((ultimo.lng-anterior.lng)*111320*Math.cos(p.lat*Math.PI/180)),
+         dy:Math.round((ultimo.lat-anterior.lat)*110570)} : null;
     const point={codigo:'B'+String(n).padStart(3,'0'),lat:+p.lat.toFixed(7),lng:+p.lng.toFixed(7),
       t:now(),acc:Math.round(p.acc),bairro:bairroAt(p),micro:current.micro,
-      logradouro:null,numeroAproximado:null};
+      logradouro:null,numeroAproximado:null,
+      ...(direcao?{direcao}:{} )};
     const updated={...current,potholeSeq:n,potholes:[...(current.potholes||[]),point]};
     if(!persist(updated))return null;
     current=updated;drawTrack();drawUI();
@@ -451,13 +459,14 @@
         ?'Ronda interrompida: marcação cancelada.':'Não foi possível obter uma posição recente.');
     },{enableHighAccuracy:true,timeout:15000,maximumAge:0});
   }
-  function editPothole(roundId,code,logradouro,numero){
+  function editPothole(roundId,code,logradouro,numero,origem='manual'){
     const r=([current,...history].filter(Boolean)).find(x=>x.id===roundId);
     const p=(r?.potholes||[]).find(x=>x.codigo===code);
     if(!p || !storageOk)return false;
-    const before={logradouro:p.logradouro,numeroAproximado:p.numeroAproximado};
+    const before={logradouro:p.logradouro,numeroAproximado:p.numeroAproximado,origemEndereco:p.origemEndereco};
     p.logradouro=String(logradouro||'').trim().slice(0,120)||null;
     p.numeroAproximado=String(numero||'').trim().slice(0,20)||null;
+    p.origemEndereco=origem==='automatico'?'automatico':'manual';
     if(!persist()){Object.assign(p,before);return false;}
     if(r===current)drawTrack();
     return true;

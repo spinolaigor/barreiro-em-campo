@@ -1,5 +1,5 @@
 /* Barreiro em Campo — ocorrências de buracos vinculadas às rondas.
-   Sem upload automático e sem inventar endereço a partir de latitude/longitude. */
+   A referência local usa somente cadastro oficial PBH; coordenadas não são enviadas. */
 (function potholeUI(){
   'use strict';
   const gps=()=>window.BarreiroRondaUI;
@@ -76,6 +76,18 @@
     setTimeout(()=>URL.revokeObjectURL(url),30000);
   }
   function sendReport(){
+    const pendentes=reportRows().filter(p=>!p.logradouro||!p.numeroAproximado);
+    if(pendentes.length){
+      info('Identificando rua e número dos '+pendentes.length+' registro(s). Aguarde a consulta local.');
+      Promise.resolve(window.BarreiroEnderecosRonda?.completar?.(selectedRound()?.id))
+        .then(()=>{
+          const faltam=reportRows().filter(p=>!p.logradouro||!p.numeroAproximado);
+          if(showPanel)renderPanel();
+          info(faltam.length?'Existem '+faltam.length+' endereço(s) pendente(s). Corrija nas marcações abaixo antes de compartilhar.':
+            'Ruas e números preenchidos. Toque novamente para compartilhar PDF e CSV.');
+        }).catch(()=>info('Não foi possível consultar o cadastro. Verifique a conexão e edite a referência.'));
+      return;
+    }
     let files;
     try{files=makePair();}
     catch(e){info('Não foi possível preparar os dois arquivos. Confira o navegador.');return;}
@@ -108,8 +120,9 @@
     const list=reportRows(),round=selectedRound();
     const groups=groupRows(list);
     const last=list.slice(-10).reverse();
+    const faltam=list.filter(p=>(!p.logradouro||!p.numeroAproximado)&&!last.includes(p));
     body.innerHTML='<p><b>'+list.length+' buraco(s) nesta ronda</b> · Micro '+esc(round?.micro||'-')+'.</p>'+
-      '<p class="hole-help">Rua e número são opcionais. Um toque em compartilhar prepara sempre os dois arquivos.</p>'+
+      '<p class="hole-help">Rua e nº aproximado são preenchidos automaticamente com o cadastro PBH. Confira esquinas e corrija se necessário.</p>'+
       '<div class="hole-export-actions"><button type="button" data-hole="send" id="sendHoleReport">'+
       (navigator.share&&navigator.canShare?'Compartilhar relatório':'Baixar relatório completo')+
       ' (PDF + planilha)</button></div>'+
@@ -118,6 +131,11 @@
         '<div>'+esc(p.logradouro||'Via a identificar')+
         (p.numeroAproximado?' · Próx. nº '+esc(p.numeroAproximado):'')+' · GPS ±'+Math.round(p.acc)+' m</div>'+
         '<button type="button" data-hole="edit" data-ronda="'+esc(p.ronda)+'" data-code="'+esc(p.codigo)+'">Editar referência</button></div>').join('')+'</div>':'<p>Nenhuma ocorrência marcada.</p>')+
+      (faltam.length?'<strong>Referências pendentes ('+faltam.length+')</strong><div class="hole-list">'+
+        faltam.map(p=>'<div class="hole-item"><b>'+esc(p.codigo)+'</b> · '+esc(p.bairro||'')+
+        '<div>'+esc(p.logradouro||'Via a identificar')+' · '+esc(p.numeroAproximado||'Nº pendente')+
+        '</div><button type="button" data-hole="edit" data-ronda="'+esc(p.ronda)+
+        '" data-code="'+esc(p.codigo)+'">Editar referência</button></div>').join('')+'</div>':'')+
       '<p id="holeInfo" role="status" aria-live="polite">'+esc(lastStatus)+'</p>';
   }
   function mark(){
@@ -126,7 +144,10 @@
     gps().marcarBuraco((point,msg)=>{
       loading=false;info(msg);
       sync();
-      if(point&&showPanel)renderPanel();
+      if(point){
+        window.dispatchEvent?.(new Event('barreiro:buraco'));
+        if(showPanel)renderPanel();
+      }
     });
   }
   function sync(){
@@ -175,6 +196,7 @@
       }
     });
     document.addEventListener('keydown',event=>{if(event.key==='Escape'&&showPanel){showPanel=false;sync();}});
+    window.addEventListener('barreiro:endereco',()=>{if(showPanel)renderPanel();sync();});
     setInterval(sync,1000);
     sync();
   }
