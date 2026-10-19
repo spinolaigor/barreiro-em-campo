@@ -1,6 +1,6 @@
 # Barreiro em Campo — mapa territorial público
 
-**Site em operação (piloto):** https://spinolaigor.github.io/barreiro-em-campo/ · **Versão atual:** v0.4.5-beta (piloto de campo) — [histórico de versões](VERSOES.md)
+**Site em operação (piloto):** https://spinolaigor.github.io/barreiro-em-campo/ · **Versão atual:** v0.4.6-beta (piloto de campo) — [histórico de versões](VERSOES.md)
 
 **Validação física pendente:** o GPS e a marcação de buracos passaram em testes de lógica e em Chromium com GPS virtual, mas o comportamento de posicionamento real precisa ser testado no Android. Faça backup das rondas e mantenha a página aberta durante o teste.
 

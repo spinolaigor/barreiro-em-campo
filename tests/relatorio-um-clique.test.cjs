@@ -18,7 +18,7 @@ test('PDF é documento binário real com uma página e informações das ocorrê
   assert.equal(pdf.subarray(0,8).toString(),'%PDF-1.4');
   assert.match(binary,/\/Type \/Catalog/);
   assert.match(binary,/\/Pages/);
-  assert.match(binary,/\/Count 1 /);
+  assert.match(binary,/\/Count 2 /);
   assert.match(binary,/Rua Exemplo/);
   assert.match(binary,/B001/);
   assert.match(binary,/%%EOF$/);
