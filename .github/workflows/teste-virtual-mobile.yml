@@ -1,0 +1,38 @@
+name: Simular ronda no navegador móvel
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  chromium-android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Preparar navegador de teste e Leaflet local
+        run: |
+          npm install --no-save --no-package-lock --no-audit --no-fund playwright@1.56.1 leaflet@1.9.4
+          google-chrome --version
+      - name: Validar scripts e realizar testes automatizados
+        run: |
+          node --check ronda.js
+          node --check ocorrencias.js
+          node --check tests/mobile-virtual.cjs
+          node --test tests/*.test.cjs
+      - name: Testar fluxo integral em Chromium 390x844 com GPS virtual
+        run: node tests/mobile-virtual.cjs
+      - name: Guardar telas de validação
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: telas-teste-mobile
+          path: |
+            tests/mobile-virtual-ronda.png
+            tests/mobile-virtual-painel.png
+          if-no-files-found: ignore
+          retention-days: 7
