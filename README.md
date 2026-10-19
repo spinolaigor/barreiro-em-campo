@@ -1,8 +1,8 @@
 # Barreiro em Campo — mapa territorial público
 
-**Site em operação (piloto):** https://spinolaigor.github.io/barreiro-em-campo/ · **Versão atual:** v0.4.2-beta (teste de campo) — [histórico de versões](VERSOES.md)
+**Site em operação (piloto):** https://spinolaigor.github.io/barreiro-em-campo/ · **Versão atual:** v0.4.3-beta (piloto de campo) — [histórico de versões](VERSOES.md)
 
-**Validação em campo pendente:** a publicação experimental permite testar GPS ao vivo, diagnóstico e painel móvel no Android. Testes automatizados não substituem o teste em rua. Faça backup das rondas e mantenha a página aberta durante o teste.
+**Validação física pendente:** o GPS e a marcação de buracos passaram em testes de lógica e em Chromium com GPS virtual, mas o comportamento de posicionamento real precisa ser testado no Android. Faça backup das rondas e mantenha a página aberta durante o teste.
 
 Projeto público de consulta cartográfica das **10 microrregiões da Regional Barreiro (Belo Horizonte)**, com busca por micro, bairro ou avenida, camadas territoriais e localização aproximada mediante permissão do navegador.
 
@@ -47,6 +47,12 @@ Os pontos de GPS entram no registro apenas **dentro da micro selecionada**. Leit
 **Resiliência:** a ronda é salva no navegador ao longo do percurso. Após recarregar a página, uma ronda interrompida pode ser retomada manualmente. Limpar o armazenamento do navegador pode apagar os registros não exportados. Para uso oficial e continuado, fazer pilotos em diferentes celulares e estabelecer orientações de privacidade e conservação dos dados.
 
 A análise de percentual de ruas percorridas ou consideradas vistoriadas **não está implementada**; isso exige associar GPS à malha viária e definir regras operacionais de aceitação da vistoria.
+
+## Marcação rápida de buracos (v0.4.3-beta)
+Durante uma ronda ativa, toque em **＋ Buraco** para registrar um ponto individual, com coordenadas GPS, horário, precisão, micro e bairro. Não exige foto nem formulário.
+O código da ocorrência é sequencial em cada ronda. Para informar uma **rua e número de referência aproximados**, abra **Ronda GPS → Buracos (N) → Editar referência**. Esses campos são opcionais: o sistema não inventa número de imóvel nem identifica automaticamente todas as ruas.
+Use **Exportar CSV** na seção Buracos para baixar uma linha por ocorrência. Use **Relatório / PDF** para abrir um relatório imprimível e escolher **Salvar como PDF** no navegador. Também faça o **backup completo JSON**. Os dados ficam somente neste navegador até exportação e compartilhamento manual.
+Consulte [instruções e limitações](docs/OCORRENCIAS.md). Os testes em Chromium usam GPS simulado e não substituem validação física em Android.
 
 ## Versões e falhas de GPS (v0.4.0)
 

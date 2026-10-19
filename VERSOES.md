@@ -1,6 +1,15 @@
 # Barreiro em Campo — Histórico de versões
 
-**Versão atual: v0.4.2-beta (piloto de GPS em campo)** — 19 de outubro de 2026.
+**Versão atual: v0.4.3-beta (piloto de marcação de buracos)** — 19 de outubro de 2026.
+
+## v0.4.3-beta — Marcação rápida de buracos
+- Botão **＋ Buraco** durante ronda GPS: grava ocorrência individual com coordenadas, bairro, micro, horário e precisão.
+- Ponto vermelho para buracos, distinto dos pontos verdes de vistorias e das linhas de percurso.
+- Rua e número de referência opcionais, preenchidos manualmente e rotulados como aproximação.
+- CSV consolidado de ocorrências; relatório imprimível no navegador para **Salvar como PDF**.
+- Dados de buracos integrados aos registros locais e backup JSON da ronda sem alterar chave de armazenamento.
+- **42 testes de lógica e ensaio Chromium móvel com GPS simulado aprovados.** Ainda requer avaliação da precisão GPS em aparelho real.
+- Site publicado como piloto experimental; não há upload automático ao Drive.
 
 ## v0.4.2-beta — Publicação experimental para validação em Android
 - Mapa móvel com painel territorial recolhido e delimitações mais leves; ruas do mapa-base ficam prioritárias.

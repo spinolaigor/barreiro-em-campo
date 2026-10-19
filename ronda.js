@@ -8,7 +8,7 @@
   if (!bridge || !bridge.DATA || !Array.isArray(bridge.DATA.micros)) return;
 
   const KEY = 'barreiro.rondas.v1'; // Compatível com rondas salvas anteriormente
-  const APP_VERSION = '0.4.2-beta';
+  const APP_VERSION = '0.4.3-beta';
   const GPS_FRESH_MS = 30000;
   const GPS_DISPLAY_MAX_ACC = 250;
   const COLORS = { navy: '#142c44', blue: '#147baf', green: '#138065' };
@@ -70,6 +70,7 @@
         (v.history!=null && !Array.isArray(v.history))) throw new Error('Formato desconhecido');
       const valid = r => r && typeof r.id==='string' && microById.has(String(r.micro)) &&
         Array.isArray(r.points) && Array.isArray(r.visits) &&
+        (r.potholes==null || (Array.isArray(r.potholes) && r.potholes.every(p=>p && Number.isFinite(p.lat) && Number.isFinite(p.lng) && Number.isFinite(p.t)))) &&
         ['recording','paused','finished'].includes(r.status) && Number.isFinite(r.startedAt) &&
         (r.gaps==null || Array.isArray(r.gaps)) &&
         [...r.points,...r.visits].every(p=>p && Number.isFinite(p.lat) && Number.isFinite(p.lng) && Number.isFinite(p.t));
@@ -80,7 +81,7 @@
       if(current && current.status === 'recording') {
         // Nunca contar o tempo em que a página esteve fechada como tempo ativo.
         const lastKnown = (current.gaps || []).reduce((last,g)=>Math.max(last,g.t || 0),
-          Math.max(current.resumedAt || current.startedAt,current.points.at(-1)?.t || 0,current.visits.at(-1)?.t || 0));
+          Math.max(current.resumedAt || current.startedAt,current.points.at(-1)?.t || 0,current.visits.at(-1)?.t || 0,(current.potholes||[]).at(-1)?.t || 0));
         const checkpoint = Number.isFinite(current.savedAt) ? current.savedAt : lastKnown;
         current.elapsedMs = Number.isFinite(current.savedElapsedMs) ? current.savedElapsedMs :
           (current.elapsedMs || 0) + Math.max(0,checkpoint-(current.resumedAt || current.startedAt));
@@ -208,6 +209,8 @@
     });
     current.visits.forEach((p,i)=> L.circleMarker([p.lat,p.lng],{radius:7,weight:2,color:'#fff',fillColor:COLORS.green,fillOpacity:1})
       .bindPopup(`<b>Vistoria ${i+1}</b><br>${esc(p.bairro)}<br>${esc(stamp(p.t))}`).addTo(markerLayer));
+    (current.potholes||[]).forEach((p,i)=>L.circleMarker([p.lat,p.lng],{radius:7,weight:2,color:'#fff',fillColor:'#c34830',fillOpacity:1})
+      .bindPopup('<b>Buraco '+esc(p.codigo||'#'+(i+1))+'</b><br>'+esc(p.bairro||'Bairro a identificar')+'<br>'+esc(p.logradouro||'Via a identificar')+'<br>GPS ±'+Math.round(p.acc)+' m').addTo(markerLayer));
     (current.gaps||[]).forEach((g,i)=>{
       if(!Number.isFinite(g.lat)||!Number.isFinite(g.lng))return;
       L.circleMarker([g.lat,g.lng],{radius:6,weight:2,color:'#fff',fillColor:'#d99024',fillOpacity:1})
@@ -333,7 +336,7 @@
     if(!microById.has(micro)){inform('Escolha a micro para iniciar.','warning');return}
     if(current && ['paused','recording'].includes(current.status)) {inform('Finalize a ronda atual antes de começar outra.','warning');return;}
     current={id:sid(),micro,status:'recording',startedAt:now(),resumedAt:now(),elapsedMs:0,lastPauseAt:null,
-      endedAt:null,points:[],visits:[],gaps:[],meters:0,segment:0,outside:0,lastLocation:null};
+      endedAt:null,points:[],visits:[],potholes:[],potholeSeq:0,gaps:[],meters:0,segment:0,outside:0,lastLocation:null};
     lastGps=null;gpsState='aguardando';followLive=true;clearLivePosition();
     gpsStats={received:0,accepted:0,ignored:0,lastReceivedAt:null,lastResult:'Aguardando GPS',startedAt:now()};
     window.BarreiroLocalizacao?.fechar?.();
@@ -398,6 +401,72 @@
       if(current?.id!==sessionId || current.status!=='recording' || generation!==watchGeneration)return;
       markRefreshing=false;gpsError(err);inform('Não foi possível atualizar a posição.','warning');updateStatus();
     },{enableHighAccuracy:true,timeout:15000,maximumAge:0});
+  }
+
+  function savedPotholes(){
+    const all=current?[current,...history]:history;
+    return all.map(r=>({id:r.id,micro:r.micro,startedAt:r.startedAt,endedAt:r.endedAt,
+      status:r.status,potholes:(r.potholes||[]).map(p=>({...p}))}));
+  }
+  function savePothole(p){
+    if(!storageOk || !current || current.status!=='recording' || !freshFix(p) ||
+       !Number.isFinite(p.acc) || p.acc>75 || !inside(p,microById.get(current.micro).geometry))return null;
+    const n=(current.potholeSeq||0)+1;
+    const point={codigo:'B'+String(n).padStart(3,'0'),lat:+p.lat.toFixed(7),lng:+p.lng.toFixed(7),
+      t:now(),acc:Math.round(p.acc),bairro:bairroAt(p),micro:current.micro,
+      logradouro:null,numeroAproximado:null};
+    const updated={...current,potholeSeq:n,potholes:[...(current.potholes||[]),point]};
+    if(!persist(updated))return null;
+    current=updated;drawTrack();drawUI();
+    if(navigator.vibrate)try{navigator.vibrate(65)}catch(e){}
+    return {...point};
+  }
+  function potholePosition(callback){
+    if(!current || current.status!=='recording' || !storageOk){
+      callback(null,'Inicie uma ronda com salvamento disponível.');return;
+    }
+    const accept=pos=>{
+      if(!pos || !freshFix(pos) || pos.acc>75 || !inside(pos,microById.get(current.micro).geometry)){
+        callback(null,'GPS ainda impreciso, antigo ou fora da micro. Buraco não marcado.');return;
+      }
+      const point=savePothole(pos);
+      callback(point,point?'Buraco '+point.codigo+' registrado.':'Não foi possível salvar o ponto. Confira o backup.');
+    };
+    if(freshFix(lastGps) && gpsState==='ok'){accept(lastGps);return;}
+    if(!navigator.geolocation?.getCurrentPosition){callback(null,'GPS indisponível.');return;}
+    const id=current.id,generation=watchGeneration;
+    navigator.geolocation.getCurrentPosition(position=>{
+      if(current?.id!==id||current.status!=='recording'||generation!==watchGeneration){
+        callback(null,'Ronda interrompida: marcação cancelada.');return;
+      }
+      acceptGps(position);
+      const c=position.coords||{};
+      const p={lat:c.latitude,lng:c.longitude,acc:c.accuracy,t:position.timestamp};
+      if(lastGps?.t!==p.t || gpsState!=='ok'){
+        callback(null,'Nova posição não aceita. Buraco não registrado.');return;
+      }
+      accept(p);
+    },()=>{
+      callback(null,current?.id!==id||generation!==watchGeneration||current?.status!=='recording'
+        ?'Ronda interrompida: marcação cancelada.':'Não foi possível obter uma posição recente.');
+    },{enableHighAccuracy:true,timeout:15000,maximumAge:0});
+  }
+  function editPothole(roundId,code,logradouro,numero){
+    const r=([current,...history].filter(Boolean)).find(x=>x.id===roundId);
+    const p=(r?.potholes||[]).find(x=>x.codigo===code);
+    if(!p || !storageOk)return false;
+    const before={logradouro:p.logradouro,numeroAproximado:p.numeroAproximado};
+    p.logradouro=String(logradouro||'').trim().slice(0,120)||null;
+    p.numeroAproximado=String(numero||'').trim().slice(0,20)||null;
+    if(!persist()){Object.assign(p,before);return false;}
+    if(r===current)drawTrack();
+    return true;
+  }
+  function undoPothole(){
+    if(!current || !current.potholes?.length || !storageOk)return false;
+    const updated={...current,potholes:current.potholes.slice(0,-1)};
+    if(!persist(updated))return false;
+    current=updated;drawTrack();drawUI();return true;
   }
   function name(s){return 'Barreiro_Micro_'+s.micro+'_Ronda_'+new Date(s.startedAt).toISOString().replace(/[:.]/g,'-').slice(0,19)}
   function segments(s){const output=new Map();for(const p of s.points){if(!output.has(p.seg))output.set(p.seg,[]);output.get(p.seg).push(p)}return [...output.values()];}
@@ -548,7 +617,10 @@
   window.BarreiroRondaUI={
     fecharPainel(){panelOpen=false;drawUI()},
     get ativa(){return current?.status==='recording'},
-    mostrarLocalizacao(){followCurrentPosition();panelOpen=true;drawUI();}
+    mostrarLocalizacao(){followCurrentPosition();panelOpen=true;drawUI();},
+    get gravando(){return current?.status==='recording' && storageOk},
+    marcarBuraco:potholePosition, listarBuracos:savedPotholes,editarBuraco:editPothole,
+    desfazerBuraco:undoPothole
   };
   function startApp(){
     load();buildUI();if(!storageOk)panelOpen=true;drawUI();
