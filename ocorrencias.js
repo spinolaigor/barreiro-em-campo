@@ -62,7 +62,7 @@
     const round=selectedRound(),list=reportRows();
     if(!round || !list.length)return null;
     if(!window.BarreiroPDF?.create)throw Error('Gerador PDF indisponível');
-    const tag=new Date(round.startedAt).toISOString().slice(0,10)+'_Micro_'+round.micro;
+    const tag=new Date(round.startedAt).toISOString().replace(/[:.]/g,'-').slice(0,19)+'_Micro_'+round.micro;
     const filePDF=new File([window.BarreiroPDF.create(list,round)],
       'Barreiro_Buracos_'+tag+'.pdf',{type:'application/pdf'});
     const fileCSV=new File([csv(list)],
