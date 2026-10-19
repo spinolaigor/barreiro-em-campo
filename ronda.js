@@ -8,7 +8,7 @@
   if (!bridge || !bridge.DATA || !Array.isArray(bridge.DATA.micros)) return;
 
   const KEY = 'barreiro.rondas.v1'; // Compatível com rondas salvas anteriormente
-  const APP_VERSION = '0.4.4-beta';
+  const APP_VERSION = '0.4.5-beta';
   const GPS_FRESH_MS = 30000;
   const GPS_DISPLAY_MAX_ACC = 250;
   const COLORS = { navy: '#142c44', blue: '#147baf', green: '#138065' };
