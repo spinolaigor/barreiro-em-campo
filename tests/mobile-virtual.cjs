@@ -163,7 +163,7 @@ async function main(){
     let saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('barreiro.rondas.v1')).current);
     assert.equal(saved.potholes[0].codigo,'B001');
     assert.ok(saved.potholes[0].logradouro===null||typeof saved.potholes[0].logradouro==='string');
-    assert.ok(saved.potholes[0].numeroAproximado===null||/^\\d/.test(saved.potholes[0].numeroAproximado));
+    assert.ok(saved.potholes[0].numeroAproximado===null||/^\d/.test(saved.potholes[0].numeroAproximado));
     assert.equal(saved.visits.length,0,'buraco não é vistoria genérica');
     assert.equal(saved.potholes[0].micro,'01');
     await page.locator('#rondaFab').click();
