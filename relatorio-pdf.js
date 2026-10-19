@@ -126,6 +126,7 @@
         commands.push(cmd+(fill?' h f':' S'));
       };
       // Vias: contexto cartografico tenue, quando a base compacta PBH ja estiver carregada.
+      for(const r of xyRings)drawPath(r,'0.85 0.91 0.96',0,true);
       const malha=window.BarreiroEndereco?.vias||[];
       const margem=120;
       for(const rua of malha){
@@ -135,7 +136,6 @@
           p[1]>minY-margem&&p[1]<maxY+margem))continue;
         drawPath(ps,'0.87 0.90 0.92',.52);
       }
-      for(const r of xyRings)drawPath(r,'0.85 0.91 0.96',0,true);
       for(const r of xyRings)drawPath(r,'0.35 0.54 0.67',1.3);
       // Segmentar nas pausas: nunca ligar trechos GPS desconectados.
       let seg=null,part=[];
@@ -162,7 +162,7 @@
       commands.push('Q');
     } else txt('Sem geometria disponivel para o mapa.',mapX+25,mapY+mapH/2,10);
     line(LEFT,250,RIGHT,250,'0.87 0.90 0.92');
-    txt('AZUL: trajeto GPS     VERMELHO: buracos (numero = coincidentes)     CONTORNO: limite da micro',
+    txt('AZUL: trajeto GPS     VERMELHO: buracos (numero = agrupados no mapa)     CONTORNO: limite da micro',
       LEFT,238,7.5,false,'0.27 0.38 0.48');
     txt('BURACOS POR BAIRRO',LEFT,213,10,true);
     if(porBairro.length===0)txt('Nenhum buraco marcado nesta ronda.',LEFT,194,9);
@@ -176,9 +176,30 @@
       txt(short(porBairro[i][0],maxChars),bx,by,8);
       txt(String(porBairro[i][1]),bx+colW-32,by,8,true);
     }
+    if(porBairro.length>maxRows*cols)txt('Demais bairros na pagina seguinte.',LEFT,75,7.5);
     txt('Referencia: pontos registrados pelo GPS. Numero de imovel: aproximacao cadastral PBH.',
       LEFT,66,7.5,false,'0.34 0.42 0.48');
     txt('Distancia GPS orientativa; nao comprova vistoria integral das vias.',LEFT,54,7.5,false,'0.34 0.42 0.48');
+    // Caso a micro tenha mais bairros que o quadro da capa, continuar sem omissoes.
+    if(porBairro.length>maxRows*cols){
+      const extra=porBairro.slice(maxRows*cols);
+      startPage();
+      txt('BARREIRO EM CAMPO  /  MICRO '+(round?.micro||'-'),LEFT,800,9,true,'0.08 0.36 0.52');
+      txt('BURACOS POR BAIRRO  /  CONTINUACAO',LEFT,777,15,true);
+      line(LEFT,755,RIGHT,755);
+      let yy=731;
+      for(const [bairro,n] of extra){
+        if(yy<74){
+          startPage();
+          txt('BURACOS POR BAIRRO  /  CONTINUACAO',LEFT,796,13,true);
+          yy=769;
+        }
+        txt(bairro,LEFT,yy,9);
+        txt(String(n),RIGHT-25,yy,9,true);
+        line(LEFT,yy-8,RIGHT,yy-8,'0.9 0.93 0.95');
+        yy-=19;
+      }
+    }
     // Detalhamento: uma linha por ID, mesmo se dois buracos estiverem no mesmo numero.
     const sorted=entries.slice().sort((a,b)=>
       (a.bairro||'').localeCompare(b.bairro||'','pt-BR')||
