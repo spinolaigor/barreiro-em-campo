@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const source=fs.readFileSync('localizacao-campo.js','utf8');
 
-function harness(){
+function harness(bairroGeometry=null){
   const nodes=new Map();let view=0,move=0;
   let center={lat:-20.01,lng:-44.01};
   const node=id=>{
@@ -14,7 +14,7 @@ function harness(){
   const layer=()=>({addTo(){return this},setLatLng(){return this},setRadius(){return this},setStyle(){return this}});
   const L={circleMarker(){return layer()},circle(){return layer()}};
   const geo={type:'Polygon',coordinates:[[[-44.2,-20.2],[-43.8,-20.2],[-43.8,-19.8],[-44.2,-19.8],[-44.2,-20.2]]]};
-  const bridge={DATA:{micros:[{id:'05',geometry:geo}],bairros:[{nome:'Bairro de Teste',micro:'05',geometry:geo}]},getMap:()=>({
+  const bridge={DATA:{micros:[{id:'05',geometry:geo}],bairros:[{nome:'Bairro de Teste',micro:'05',geometry:bairroGeometry||geo}]},getMap:()=>({
     setView(coords){view++;center={lat:coords[0],lng:coords[1]}},
     panTo(coords){move++;center={lat:coords[0],lng:coords[1]}},
     getCenter(){return center}
@@ -25,11 +25,11 @@ function harness(){
     setInterval(){return 1},clearInterval(){}};
   const target="  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup,{once:true});";
   assert.ok(source.includes(target));
-  const replacement="  window.__where_test={position,gpsError,territory,stop,setOpened:v=>opened=v};\n"+target;
+  const replacement="  window.__where_test={position,gpsError,territory,stop,open,setOpened:v=>opened=v};\n"+target;
   vm.createContext(ctx);vm.runInContext(source.replace(target,replacement),ctx);
   const api=ctx.window.__where_test;
   api.setOpened(true);
-  return {api,node,stats:()=>({view,move}),emit:(lat,lng,accuracy=10,t=Date.now())=>
+  return {api,node,window:ctx.window,stats:()=>({view,move}),emit:(lat,lng,accuracy=10,t=Date.now())=>
     api.position({coords:{latitude:lat,longitude:lng,accuracy},timestamp:t})};
 }
 
@@ -64,4 +64,21 @@ test('posição muito imprecisa é recusada e apresenta explicação',()=>{
 test('GPS negado apresenta orientação sobre permissões',()=>{
   const h=harness();h.api.gpsError({code:1});
   assert.match(h.node('whereStatus').textContent,/Permissão do GPS negada/);
+});
+
+test('bairro GeometryCollection com Polygon é reconhecido pelo GPS',()=>{
+  const geom={type:'GeometryCollection',geometries:[
+    {type:'LineString',coordinates:[[-44.02,-20.02],[-44.01,-20.02]]},
+    {type:'Polygon',coordinates:[[[-44.1,-20.1],[-43.9,-20.1],[-43.9,-19.9],[-44.1,-19.9],[-44.1,-20.1]]]}
+  ]};
+  const h=harness(geom);h.emit(-20,-44);
+  assert.equal(h.node('whereBairro').textContent,'Bairro de Teste');
+});
+
+test('localização durante ronda ativa reutiliza o rastreador da ronda',()=>{
+  const h=harness();let calls=0;
+  h.window.BarreiroRondaUI={ativa:true,mostrarLocalizacao(){calls++}};
+  h.api.open();
+  assert.equal(calls,1);
+  assert.equal(h.node('wherePanel').hidden,true);
 });

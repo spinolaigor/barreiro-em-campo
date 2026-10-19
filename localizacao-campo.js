@@ -16,6 +16,7 @@
     return inside;
   }
   function inGeom(lat,lng,shape){
+    if(shape?.type==='GeometryCollection')return (shape.geometries||[]).some(g=>inGeom(lat,lng,g));
     if(!shape||!shape.coordinates)return false;
     const polygons=shape.type==='Polygon'?[shape.coordinates]:
       shape.type==='MultiPolygon'?shape.coordinates:[];
@@ -89,8 +90,14 @@
     if(interval!==null)clearInterval(interval);
     interval=null;
   }
+  function clearVisual(){
+    const m=map();
+    if(m&&marker)m.removeLayer(marker);
+    if(m&&circle)m.removeLayer(circle);
+    marker=null;circle=null;last=null;centered=false;
+  }
   function close(){
-    opened=false;stop();$('wherePanel').hidden=true;
+    opened=false;stop();clearVisual();$('wherePanel').hidden=true;
     $('whereFloating').setAttribute('aria-expanded','false');
   }
   function start(){
@@ -99,7 +106,7 @@
     if(!window.isSecureContext||!navigator.geolocation){
       message('GPS indisponível. Abra o endereço HTTPS pelo Chrome ou Safari.',true);return;
     }
-    last=null;centered=false;follow=true;count=0;
+    clearVisual();follow=true;count=0;
     $('whereFollow').textContent='◎ Acompanhando';
     $('whereFollow').setAttribute('aria-pressed','true');
     $('whereMaps').hidden=true;
@@ -114,7 +121,14 @@
     }catch(e){gpsError({code:0});}
   }
   function open(){
+    if(window.BarreiroRondaUI?.ativa){
+      window.BarreiroRondaUI.mostrarLocalizacao();return;
+    }
     if(!$('wherePanel'))return;
+    window.BarreiroNavegacao?.fechar?.();
+    window.BarreiroRondaUI?.fecharPainel?.();
+    $('layerPanel')?.classList.remove('open');
+    $('layerButton')?.setAttribute('aria-expanded','false');
     opened=true;$('wherePanel').hidden=false;
     $('whereFloating').setAttribute('aria-expanded','true');
     start();
@@ -157,7 +171,7 @@
       $('whereFollow').setAttribute('aria-pressed','false');
     }});
     document.addEventListener('visibilitychange',()=>{if(document.hidden&&opened){
-      stop();message('Localização pausada. Toque Atualizar quando voltar ao mapa.',true);
+      stop();clearVisual();message('Localização pausada. Toque Atualizar quando voltar ao mapa.',true);
     }});
   }
   window.BarreiroLocalizacao={abrir:open,fechar:close,territory,

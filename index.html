@@ -120,8 +120,9 @@
 }
 @media(max-width:360px){.detail-head h2{font-size:21px}.micro-quick{padding:8px 9px}}
 </style>
-<link rel="stylesheet" href="./ronda.css?v=0.4.1" />
-<link rel="stylesheet" href="./localizacao-campo.css?v=0.4.1-campo" />
+<link rel="stylesheet" href="./ronda.css?v=0.4.2-beta" />
+<link rel="stylesheet" href="./localizacao-campo.css?v=0.4.2-beta" />
+<link rel="stylesheet" href="./navegacao.css?v=0.4.2-beta" />
 </head>
 <body>
 <div class="app">
@@ -212,7 +213,7 @@ function renderDetail(m){
  $('detail').classList.add('open')
 }
 function darken(hex){const rgb=[1,3,5].map(i=>Math.round(parseInt(hex.slice(i,i+2),16)*.75));return '#'+rgb.map(x=>x.toString(16).padStart(2,'0')).join('')}
-function refreshStyles(){if(!mapReady)return;for(const m of DATA.micros){const layer=groupLayers.get(m.id);let dim=selected&&m.id!==selected;layer.setStyle({color:selected===m.id?'#0e2c40':'#223247',weight:selected===m.id?3.3:dim?1.1:2,opacity:dim?.50:.9,fillColor:m.cor,fillOpacity:dim?.20:selected===m.id?.64:.47}); if(selected===m.id)layer.bringToFront()}
+function refreshStyles(){if(!mapReady)return;const small=window.innerWidth<=700;for(const m of DATA.micros){const layer=groupLayers.get(m.id);let dim=selected&&m.id!==selected;layer.setStyle({color:selected===m.id?'#0e2c40':'#223247',weight:small?(selected===m.id?2.3:dim?1:1.35):(selected===m.id?3.3:dim?1.1:2),opacity:dim?.50:.9,fillColor:m.cor,fillOpacity:small?(dim?.035:selected===m.id?.18:.085):(dim?.20:selected===m.id?.64:.47)}); if(selected===m.id)layer.bringToFront()}
  for(const b of allBairros){const l=bairroLayers.get(b.nome);if(l)l.setStyle({color:selectedBairro===b.nome?'#e05126':'#617d8b',weight:selectedBairro===b.nome?3.5:.7,fillOpacity:selectedBairro===b.nome?.11:0,opacity:selectedBairro===b.nome?1:.48,dashArray:selectedBairro===b.nome?'':'3,4'})}
 }
 function setLayer(type,val){if(type==='bairros'){showBairros=val;const el=$('bairrosToggle');el.classList.toggle('on',val);el.setAttribute('aria-checked',String(val));if(mapReady){if(val)bairrosGroup.addTo(map);else if(map.hasLayer(bairrosGroup))map.removeLayer(bairrosGroup);refreshStyles()}}
@@ -236,7 +237,7 @@ function initMap(){
  baseLight=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>',maxZoom:19}).addTo(map);
  baseSat=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'Tiles © Esri, Maxar, Earthstar Geographics',maxZoom:19});
  groupLayer=L.featureGroup();bairrosGroup=L.featureGroup();roadsGroup=L.featureGroup();
- for(const m of DATA.micros){const l=L.geoJSON({type:'Feature',geometry:m.geometry,properties:{}},{style:{fillColor:m.cor,color:'#223247',weight:2,fillOpacity:.47,opacity:.9}});l.bindTooltip('Micro '+m.id,{sticky:true,direction:'top',opacity:.96});l.on('click',()=>selectMicro(m.id,true));groupLayers.set(m.id,l);l.addTo(groupLayer)}groupLayer.addTo(map);
+ for(const m of DATA.micros){const l=L.geoJSON({type:'Feature',geometry:m.geometry,properties:{}},{style:{fillColor:m.cor,color:'#223247',weight:window.innerWidth<=700?1.35:2,fillOpacity:window.innerWidth<=700?.085:.47,opacity:.9}});l.bindTooltip('Micro '+m.id,{sticky:true,direction:'top',opacity:.96});l.on('click',()=>selectMicro(m.id,true));groupLayers.set(m.id,l);l.addTo(groupLayer)}groupLayer.addTo(map);
  for(const b of DATA.bairros){const l=L.geoJSON({type:'Feature',geometry:b.geometry,properties:{}},{style:{color:'#667789',weight:.65,fillOpacity:0,opacity:.45,dashArray:'3,4'}});l.bindTooltip(b.nome+(b.dividido?' · bairro dividido':''),{sticky:true});l.on('click',()=>{selectMicro(b.micro,false);focusBairro(b)});bairroLayers.set(b.nome,l);l.addTo(bairrosGroup)}
  for(const r of DATA.corredores){const l=L.geoJSON({type:'Feature',geometry:r.geometry,properties:{}},{style:{color:'#126b87',weight:3.3,opacity:.8}});l.bindTooltip('Av. / via '+r.nome+' · corredor candidato',{sticky:true});roadLayers.set(r.nome,l);l.addTo(roadsGroup)}
  let bounds=groupLayer.getBounds();map.fitBounds(bounds,{padding:[45,42]});
@@ -260,9 +261,11 @@ $('baseLight').addEventListener('click',()=>{if(mapReady){map.removeLayer(baseSa
 $('baseSat').addEventListener('click',()=>{if(mapReady){map.removeLayer(baseLight);baseSat.addTo(map);baseSat.bringToBack()}$('baseSat').classList.add('chosen');$('baseLight').classList.remove('chosen')});
 $('sheetToggle').addEventListener('click',()=>{const expanded=$('sidebarRoot').classList.toggle('expanded');$('sheetToggle').setAttribute('aria-expanded',String(expanded));$('sheetToggle').setAttribute('aria-label',expanded?'Recolher lista de microrregiões':'Ver todas as microrregiões');const span=$('sheetToggle').querySelector('.sheet-toggle-text');span.firstChild.textContent=expanded?'Recolher lista ':'Ver todas as micros ';if(mapReady){setTimeout(()=>map.invalidateSize({pan:false}),270)}});
 window.BarreiroBridge={DATA,getMap:()=>map,getSelectedMicro:()=>selected,selectMicro:(id)=>selectMicro(id,true)};
+window.addEventListener('resize',()=>{if(mapReady)refreshStyles()});
 renderGroups();initMap();
 })();
 </script>
-<script src="./ronda.js?v=0.4.1" defer></script>
-<script src="./localizacao-campo.js?v=0.4.1-campo" defer></script>
+<script src="./ronda.js?v=0.4.2-beta" defer></script>
+<script src="./localizacao-campo.js?v=0.4.2-beta" defer></script>
+<script src="./navegacao.js?v=0.4.2-beta" defer></script>
 </body></html>

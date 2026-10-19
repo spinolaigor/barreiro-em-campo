@@ -1,6 +1,14 @@
 # Barreiro em Campo — Histórico de versões
 
-**Versão atual: v0.4.1 (piloto)** — 15 de outubro de 2026.
+**Versão atual: v0.4.2-beta (piloto de GPS em campo)** — 19 de outubro de 2026.
+
+## v0.4.2-beta — Publicação experimental para validação em Android
+- Mapa móvel com painel territorial recolhido e delimitações mais leves; ruas do mapa-base ficam prioritárias.
+- Durante a ronda, o ponto atual e o círculo de precisão são independentes do rastro aceito dentro da micro.
+- Diagnóstico mostra quantidade de leituras, pontos gravados, descartes e motivo da última decisão; ausência de leitura é descrita sem afirmar falha do aparelho.
+- Posição antiga ou fora de ordem não avança a trilha. Após uma parada, Marcar vistoria pode consultar uma posição nova, sem reutilizar coordenadas antigas.
+- Localização e Ronda compartilham o rastreador ativo da ronda, sem iniciar duas observações simultâneas. O painel territorial encerra consultas abertas ao aparecer.
+- Publicada com autorização para avaliação em campo. **GPS e interface ainda precisam ser verificados em Android**, sem pressupor aprovação operacional. Consulte [roteiro de validação](docs/TESTE_GPS_MOBILE.md).
 
 Aqui fica registrado **o que mudou no aplicativo**. As rondas são dados separados: continuam salvas localmente no navegador até que sejam exportadas, e não são recuperadas automaticamente ao voltar para um código anterior.
 

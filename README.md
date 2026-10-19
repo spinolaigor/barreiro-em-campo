@@ -1,6 +1,8 @@
 # Barreiro em Campo — mapa territorial público
 
-**Site em operação (piloto):** https://spinolaigor.github.io/barreiro-em-campo/ · **Versão atual:** v0.4.1 — [histórico de versões](VERSOES.md)
+**Site em operação (piloto):** https://spinolaigor.github.io/barreiro-em-campo/ · **Versão atual:** v0.4.2-beta (teste de campo) — [histórico de versões](VERSOES.md)
+
+**Validação em campo pendente:** a publicação experimental permite testar GPS ao vivo, diagnóstico e painel móvel no Android. Testes automatizados não substituem o teste em rua. Faça backup das rondas e mantenha a página aberta durante o teste.
 
 Projeto público de consulta cartográfica das **10 microrregiões da Regional Barreiro (Belo Horizonte)**, com busca por micro, bairro ou avenida, camadas territoriais e localização aproximada mediante permissão do navegador.
 

@@ -1,0 +1,38 @@
+/* Barreiro em Campo — navegação móvel focada no mapa.
+   A lista territorial permanece acessível pelo botão Painel. */
+.panel-launch,.nav-panel-header,.nav-tools,.nav-scrim{display:none}
+@media(max-width:700px){
+  .topbar .titlebox{padding:10px 12px;min-height:42px;box-shadow:0 3px 12px #11283c24}
+  .topbar .titlebox .icon,.topbar .titlebox small{display:none}
+  .topbar .titlebox strong{font-size:12px}
+  .topbar .actions .action:not(.panel-launch){display:none!important}
+  .topbar .actions .panel-launch{display:flex;align-items:center;gap:8px;min-height:43px;background:#163e5b;color:#fff;border-color:#163e5b;padding:9px 14px;font-size:13px}
+  .topbar .actions .panel-launch[aria-expanded=true]{background:#096c58;border-color:#096c58}
+  .sidebar{height:min(70dvh,600px);transform:translateY(calc(100% + 25px));opacity:0;pointer-events:none;transition:transform .24s ease,opacity .18s ease;z-index:620}
+  .sidebar.expanded,.sidebar.has-selection.expanded{transform:translateY(0);opacity:1;pointer-events:auto}
+  .sidebar .sheet-toggle{display:none}
+  .nav-panel-header{display:flex;align-items:center;justify-content:space-between;padding:13px 16px 2px}
+  .nav-panel-header strong{font-size:14px;color:#183b53}
+  .nav-panel-close{background:#edf3f7;color:#29485e;border:0;border-radius:10px;width:38px;height:38px;font-size:21px;line-height:1;display:grid;place-items:center}
+  .sidebar .brand{padding:2px 16px 3px}
+  .sidebar.expanded .brand{padding-top:2px}
+  .sidebar .brand h1{font-size:13px;color:#6b7e90;letter-spacing:0;font-weight:700}
+  .nav-tools{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;padding:0 13px 9px}
+  .nav-tools button{display:flex;justify-content:center;align-items:center;min-height:42px;border:1px solid #dae5ec;border-radius:11px;background:#f7f9fb;color:#23465c;font-size:11px;font-weight:800;padding:8px 4px}
+  .nav-tools button:focus-visible,.nav-panel-close:focus-visible,.panel-launch:focus-visible{outline:3px solid #87c6eb;outline-offset:2px}
+  .sidebar.expanded .section-heading{padding:4px 18px 8px}
+  .sidebar.expanded .group-list{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 13px)}
+  .nav-scrim:not([hidden]){display:block;position:absolute;inset:0;z-index:610;background:#071f3130;pointer-events:auto}
+  .layer-panel{top:125px;z-index:745}
+  .map-footer,.hint{display:none!important}
+  .map-area .leaflet-bottom.leaflet-right,.map-area .leaflet-bottom.leaflet-left{bottom:calc(env(safe-area-inset-bottom,0px) + 15px)}
+  html.micro-active .map-area .leaflet-bottom.leaflet-right,
+  html.micro-active .map-area .leaflet-bottom.leaflet-left{bottom:calc(env(safe-area-inset-bottom,0px) + 146px)}
+  .map-area .toast{bottom:calc(env(safe-area-inset-bottom,0px) + 64px)}
+  html.micro-active .map-area .toast{bottom:calc(env(safe-area-inset-bottom,0px) + 162px)}
+  .ronda-root .ronda-quick{bottom:calc(env(safe-area-inset-bottom,0px) + 25px)}
+  .ronda-root .ronda-panel{bottom:calc(env(safe-area-inset-bottom,0px) + 88px);max-height:min(60dvh,460px)}
+  .nav-panel-open .ronda-fab,.nav-panel-open .ronda-quick,
+  .nav-panel-open .where-floating{visibility:hidden;pointer-events:none}
+  .nav-panel-open .map-area .detail.open{transform:translateY(calc(100% + 22px));pointer-events:none}
+}

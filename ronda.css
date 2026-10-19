@@ -42,3 +42,9 @@
 .ronda-gaps{font-size:11px;line-height:1.5;border:1px solid #eed9b6;color:#79571f;background:#fff8e9;border-radius:10px;padding:9px 11px;margin:0 0 12px}
 .ronda-gaps strong{font-weight:900}
 .ronda-gaps.clear{border-color:#d8e8e4;color:#55786e;background:#f5faf8}
+.ronda-lastfix{font-size:11px;color:#627688;margin:0 0 10px;line-height:1.4}
+.ronda-sinal-atrasado{color:#a05a1c;font-weight:800}
+.ronda-diagnostico{border-top:1px solid #e8eef4;padding:7px 0;margin:0 0 12px;font-size:11px;line-height:1.45;color:#5f7180}
+.ronda-diagnostico summary{cursor:pointer;color:#2b6583;font-weight:800;min-height:34px;padding:8px 0}
+.ronda-diagnostico div{background:#f2f7fa;padding:9px 10px;border-radius:9px}
+.ronda-diagnostico p{margin:6px 0 0}
