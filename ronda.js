@@ -436,7 +436,9 @@
     if(!navigator.geolocation?.getCurrentPosition){callback(null,'GPS indisponível.');return;}
     const id=current.id,generation=watchGeneration;
     navigator.geolocation.getCurrentPosition(position=>{
-      if(current?.id!==id||current.status!=='recording'||generation!==watchGeneration)return;
+      if(current?.id!==id||current.status!=='recording'||generation!==watchGeneration){
+        callback(null,'Ronda interrompida: marcação cancelada.');return;
+      }
       acceptGps(position);
       const c=position.coords||{};
       const p={lat:c.latitude,lng:c.longitude,acc:c.accuracy,t:position.timestamp};
@@ -445,8 +447,8 @@
       }
       accept(p);
     },()=>{
-      if(current?.id===id&&generation===watchGeneration&&current.status==='recording')
-        callback(null,'Não foi possível obter uma posição recente.');
+      callback(null,current?.id!==id||generation!==watchGeneration||current?.status!=='recording'
+        ?'Ronda interrompida: marcação cancelada.':'Não foi possível obter uma posição recente.');
     },{enableHighAccuracy:true,timeout:15000,maximumAge:0});
   }
   function editPothole(roundId,code,logradouro,numero){
