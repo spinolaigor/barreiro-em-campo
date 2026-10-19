@@ -1,6 +1,6 @@
 # Marcação rápida de buracos — protótipo de trabalho
 
-Este protótipo, isolado na branch `feat/marcacao-rapida-buracos`, **não integra a versão pública v0.4.2-beta**. Usar somente após validação da coleta GPS da ronda no Android.
+A função foi integrada como **piloto público v0.4.3-beta** após testes automatizados e simulação Chromium móvel com GPS virtual. A precisão e estabilidade do GPS físico ainda exigem teste prático em Android.
 
 ## Operação
 - Iniciar uma Ronda GPS e aguardar localização válida; **+ Buraco** aparece na parte inferior do mapa.
@@ -19,8 +19,8 @@ Este protótipo, isolado na branch `feat/marcacao-rapida-buracos`, **não integr
 - A função PDF utiliza impressão nativa do navegador e depende das opções disponíveis no Android; **não gera PDF diretamente em segundo plano**.
 - Sem sincronização automática com Drive e sem compartilhamento público de trajetos.
 
-## Testes antes de eventual publicação
-- [ ] Testar mapa, GPS e painel de v0.4.2-beta em produção.
+## Roteiro de validação no aparelho após publicação
+- [x] Testes de lógica e simulação do fluxo em Chromium móvel 390×844 com GPS virtual.\n- [ ] Testar GPS físico e painel no Android com permissão precisa.
 - [ ] Validar botão + Buraco em Android/Chrome, incluindo captura de coordenadas em deslocamento e parado.
 - [ ] Testar GPS impreciso, fora da micro e após pausar a ronda; não criar ponto incorreto.
 - [ ] Verificar visualmente os dois botões inferiores em telas de 360–430 px, inclusive com o painel aberto.
@@ -29,4 +29,4 @@ Este protótipo, isolado na branch `feat/marcacao-rapida-buracos`, **não integr
 - [ ] Finalizar, recarregar, reabrir histórico e conferir CSV, impressão PDF e backup completo.
 - [ ] Confirmar preservação de rondas antigas sem campo `potholes`.
 
-**Não mesclar este PR nem publicar sem aprovação após teste móvel.**
+**Versão publicada como piloto, não homologada fisicamente.** Fazer testes móveis e corrigir discrepâncias observadas; não interpretar pontos como laudo topográfico.
