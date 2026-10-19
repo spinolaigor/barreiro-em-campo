@@ -8,7 +8,7 @@
   if (!bridge || !bridge.DATA || !Array.isArray(bridge.DATA.micros)) return;
 
   const KEY = 'barreiro.rondas.v1'; // Compatível com rondas salvas anteriormente
-  const APP_VERSION = '0.4.5-beta';
+  const APP_VERSION = '0.4.6-beta';
   const GPS_FRESH_MS = 30000;
   const GPS_DISPLAY_MAX_ACC = 250;
   const COLORS = { navy: '#142c44', blue: '#147baf', green: '#138065' };
@@ -368,7 +368,7 @@
     if(!persist(null,nextHistory))return;
     stopWatch();clearLivePosition();history=nextHistory;
     current=null; lastGps=null;gpsState='desligado';removeTrack();
-    panelOpen=true;step='history';drawUI();inform('Ronda finalizada e salva neste navegador. Baixe o backup para guardar uma cópia fora dele.');
+    panelOpen=true;step='history';drawUI();inform('Ronda finalizada e salva. Gere o relatório de execução (PDF + CSV) para encaminhar.');
   }
   function saveVisit(p) {
     if(!current || current.status!=='recording' || !freshFix(p) || p.acc>75 ||
@@ -543,6 +543,7 @@
         case 'start':start();break;case 'pause':pause();break;case 'resume':resume();break;
         case 'finish':finish();break;case 'mark':mark();break;
         case 'history':step='history';drawUI();break;
+        case 'relatorio':window.BarreiroBuracosFormat?.sendReport?.(b.dataset.id);break;
         case 'home':step='home';drawUI();break;
         case 'export':{const s=history.find(x=>x.id===b.dataset.id)|| (current?.id===b.dataset.id?current:null);exportFile(s,b.dataset.format);break;}
         case 'delete':erase(b.dataset.id);break;
@@ -583,7 +584,7 @@
       <p class="ronda-caution">Ponto azul: GPS atual (precisão aproximada). Linha: percurso aceito na Micro ${esc(current.micro)}. Arraste o mapa para explorar; use Centralizar para acompanhar. Passar por uma rua não significa vistoriá-la.</p>`;
     }else if(step==='history'){
       content.innerHTML=`<div class="ronda-row"><h2 class="ronda-title">Rondas salvas</h2>${button('home','← Voltar','text')}</div>
-      ${history.length ? history.map(s=>`<article class="ronda-history-entry"><strong>Micro ${esc(s.micro)} · ${esc(stamp(s.startedAt))}</strong><small>${formatKm(s.meters||0)} · ${(s.potholes||[]).length} buraco(s) · ${s.visits.length} vistoria(s) · ${(s.gaps||[]).length} interrupção(ões) · ${hhmm(s.elapsedMs)}</small><details class="ronda-advanced"><summary>Opções técnicas e exclusão</summary><div class="ronda-exports">${button('export','GPX','mini',`data-id="${esc(s.id)}" data-format="gpx"`)}${button('export','GeoJSON','mini',`data-id="${esc(s.id)}" data-format="geojson"`)}${button('export','CSV','mini',`data-id="${esc(s.id)}" data-format="csv"`)}${button('delete','Excluir','mini danger',`data-id="${esc(s.id)}"`)}</div></details></article>`).join('') : '<p class="ronda-empty">Nenhuma ronda concluída neste aparelho.</p>'}
+      ${history.length ? history.map(s=>`<article class="ronda-history-entry"><strong>Micro ${esc(s.micro)} · ${esc(stamp(s.startedAt))}</strong><small>${formatKm(s.meters||0)} · ${(s.potholes||[]).length} buraco(s) · ${s.visits.length} vistoria(s) · ${(s.gaps||[]).length} interrupção(ões) · ${hhmm(s.elapsedMs)}</small>${button('relatorio','↓ Gerar relatório (PDF + CSV)','primary',`data-id="${esc(s.id)}"`)}<details class="ronda-advanced"><summary>Opções técnicas e exclusão</summary><div class="ronda-exports">${button('export','GPX','mini',`data-id="${esc(s.id)}" data-format="gpx"`)}${button('export','GeoJSON','mini',`data-id="${esc(s.id)}" data-format="geojson"`)}${button('export','CSV','mini',`data-id="${esc(s.id)}" data-format="csv"`)}${button('delete','Excluir','mini danger',`data-id="${esc(s.id)}"`)}</div></details></article>`).join('') : '<p class="ronda-empty">Nenhuma ronda concluída neste aparelho.</p>'}
       <p class="ronda-caution">Os registros ficam somente neste navegador. Exporte antes de apagar dados do site ou trocar de celular.</p>`;
     }else{
       const selected=bridge.getSelectedMicro?.();const chosen=microById.has(selected)?selected:'01';
@@ -594,7 +595,9 @@
       <p class="ronda-caution">Durante a ronda, toque em <strong>Marcar vistoria</strong> quando inspecionar um ponto. Dirigindo? Peça a alguém para operar o celular.</p>
       ${button('history','↗ Ver rondas salvas ('+history.length+')','text')}`;
     }
-    content.insertAdjacentHTML('beforeend',button('backup','↓ Baixar backup completo','outline'));
+    // O backup continua disponivel, mas nao concorre com o relatorio operacional.
+    if(!storageOk)content.insertAdjacentHTML('beforeend',button('backup','↓ Salvar backup de recuperação','outline'));
+    else content.insertAdjacentHTML('beforeend','<details class="ronda-advanced"><summary>Segurança e recuperação</summary>'+button('backup','↓ Backup completo (JSON)','outline')+'</details>');
     if(!storageOk)inform(storageMessage,'warning');
     updateStatus();
   }
@@ -629,6 +632,8 @@
     mostrarLocalizacao(){followCurrentPosition();panelOpen=true;drawUI();},
     get gravando(){return current?.status==='recording' && storageOk},
     marcarBuraco:potholePosition, listarBuracos:savedPotholes,editarBuraco:editPothole,
+    obterRonda(id){const r=([current,...history].filter(Boolean)).find(s=>s.id===id);
+      return r?JSON.parse(JSON.stringify(r)):null;},
     desfazerBuraco:undoPothole
   };
   function startApp(){
