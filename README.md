@@ -67,3 +67,5 @@ O painel da ronda oferece **Baixar backup completo** em JSON. O arquivo inclui o
 Não há mais descarte automático por quantidade de rondas, pontos do histórico ou eventos. O armazenamento continua finito: se falhar, a coleta é pausada e o usuário deve baixar o backup antes de fechar a página. Use apenas uma aba para gravar. Não há sincronização automática entre aparelhos nem importador de backup na interface nesta versão.
 
 Para validar o código: `node --check ronda.js` e `node --test tests/*.test.cjs`. Consulte [RECUPERACAO.md](RECUPERACAO.md) para retorno de versão.
+
+<!-- Branch de desenvolvimento: georreferenciamento cadastral automático em testes. -->
