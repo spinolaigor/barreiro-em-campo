@@ -87,8 +87,15 @@
         Promise.resolve(navigator.share({title:'Barreiro em Campo — relatório da ronda',
           text:'Levantamento de buracos da micro '+selectedRound().micro,files}))
           .then(()=>info('Compartilhamento concluído no dispositivo.'))
-          .catch(err=>{if(err?.name!=='AbortError')info('Compartilhamento indisponível. Use o download dos dois arquivos.');});
-      }catch(e){info('Compartilhamento indisponível no navegador.');}
+          .catch(err=>{
+            if(err?.name==='AbortError'){info('Compartilhamento cancelado.');return;}
+            files.forEach(saveFile);
+            info('Compartilhamento indisponível; PDF e planilha baixados juntos.');
+          });
+      }catch(e){
+        files.forEach(saveFile);
+        info('Compartilhamento indisponível; PDF e planilha baixados juntos.');
+      }
     }else{
       // Alternativa sem Web Share API: os DOIS arquivos, sem escolher formato.
       files.forEach(saveFile);
