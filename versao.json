@@ -1,9 +1,9 @@
 {
   "name": "Barreiro em Campo",
-  "version": "0.4.3-beta",
-  "stage": "piloto público para validação em campo",
+  "version": "0.4.4-beta",
+  "stage": "piloto público em validação de campo",
   "release_date": "2026-10-19",
-  "description": "GPS ao vivo, painel móvel e marcação rápida de buracos com exportação CSV/PDF",
+  "description": "GPS, marcação de buracos e envio simplificado de relatório PDF + CSV",
   "author": "Igor Spínola Mello",
-  "note": "GPS validado em simulação Chromium; validação física em Android pendente. Coordenadas e rondas permanecem locais."
+  "note": "Ensaio Chromium móvel com GPS simulado, leitura real de PDF e CSV e compartilhamento de dois arquivos aprovado; sinal GPS físico ainda depende de teste Android."
 }
