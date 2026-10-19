@@ -111,7 +111,7 @@ async function main(){
     assert.equal(saved.potholes[0].micro,'01');
     await page.locator('#rondaFab').click();
     await page.locator('#holeToggle').click();
-    await wait(()=>page.locator('#holeContent').getByText('B001').isVisible(),'listagem de buracos');
+    await wait(()=>page.locator('#holeContent').getByText('B001',{exact:true}).isVisible(),'listagem de buracos');
     const dialogs=['Rua de teste','120'];
     page.on('dialog',dialog=>dialog.type()==='prompt'?dialog.accept(dialogs.shift()):dialog.accept());
     await page.locator('[data-hole="edit"]').first().click();
