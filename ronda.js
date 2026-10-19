@@ -632,6 +632,7 @@
     mostrarLocalizacao(){followCurrentPosition();panelOpen=true;drawUI();},
     get gravando(){return current?.status==='recording' && storageOk},
     marcarBuraco:potholePosition, listarBuracos:savedPotholes,editarBuraco:editPothole,
+    notificar(msg){inform(msg);},
     obterRonda(id){const r=([current,...history].filter(Boolean)).find(s=>s.id===id);
       return r?JSON.parse(JSON.stringify(r)):null;},
     desfazerBuraco:undoPothole
