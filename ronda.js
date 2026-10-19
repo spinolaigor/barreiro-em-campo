@@ -451,6 +451,21 @@
         ?'Ronda interrompida: marcação cancelada.':'Não foi possível obter uma posição recente.');
     },{enableHighAccuracy:true,timeout:15000,maximumAge:0});
   }
+  function atualizarReferenciaAutomatica(roundId,code,ref){
+    if(!ref || !ref.logradouro || !storageOk)return false;
+    const r=[current,...history].filter(Boolean).find(x=>x.id===roundId);
+    const p=(r?.potholes||[]).find(x=>x.codigo===code);
+    if(!p || p.referenciaManual || p.logradouro)return false;
+    const old={...p};
+    p.logradouro=String(ref.logradouro).slice(0,120);
+    p.numeroAproximado=ref.numeroAproximado||null;
+    p.fonteReferencia=ref.fonteReferencia||'CTM/PBH';
+    p.distanciaEnderecoM=ref.distanciaEnderecoM??null;
+    p.statusEndereco=ref.statusEndereco||'estimado';
+    if(!persist()){Object.assign(p,old);return false;}
+    if(r===current)drawTrack();
+    return true;
+  }
   function editPothole(roundId,code,logradouro,numero){
     const r=([current,...history].filter(Boolean)).find(x=>x.id===roundId);
     const p=(r?.potholes||[]).find(x=>x.codigo===code);
