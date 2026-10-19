@@ -69,9 +69,9 @@
     if(!window.BarreiroPDF?.create)throw Error('Gerador PDF indisponível');
     const tag=new Date(round.startedAt).toISOString().replace(/[:.]/g,'-').slice(0,19)+'_Micro_'+round.micro;
     const filePDF=new File([window.BarreiroPDF.create(list,round)],
-      'Barreiro_Buracos_'+tag+'.pdf',{type:'application/pdf'});
+      'Barreiro_Relatorio_Ronda_'+tag+'.pdf',{type:'application/pdf'});
     const fileCSV=new File([csv(list)],
-      'Barreiro_Buracos_'+tag+'.csv',{type:'text/csv;charset=utf-8'});
+      'Barreiro_Relatorio_Ronda_'+tag+'.csv',{type:'text/csv;charset=utf-8'});
     return [filePDF,fileCSV];
   }
   function saveFile(file){

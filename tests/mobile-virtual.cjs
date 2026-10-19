@@ -246,6 +246,20 @@ async function main(){
       const d=JSON.parse(localStorage.getItem('barreiro.rondas.v1'));
       return d.current===null && d.history[0].potholes.length===3;
     }),'finalização com buraco preservado');
+    // A entrega da ronda finalizada deve existir como ação principal do histórico.
+    const archiveButton=page.locator('#rondaContent [data-ronda="relatorio"]').first();
+    await wait(()=>archiveButton.isVisible(),'botao Relatorio no historico de rondas finalizadas');
+    const archiveDownloads=[];
+    const listenHistory=d=>archiveDownloads.push(d);
+    page.on('download',listenHistory);
+    await archiveButton.click();
+    await wait(()=>Promise.resolve(archiveDownloads.length===2),'PDF e CSV da ronda finalizada');
+    page.off('download',listenHistory);
+    assert.ok(archiveDownloads.some(d=>d.suggestedFilename().endsWith('.pdf')));
+    assert.ok(archiveDownloads.some(d=>d.suggestedFilename().endsWith('.csv')));
+    const archiveCsv=archiveDownloads.find(d=>d.suggestedFilename().endsWith('.csv'));
+    assert.ok(archiveCsv.suggestedFilename().includes('Relatorio_Ronda'));
+    await page.screenshot({path:path.join(evidenceDir,'07-relatorio-ronda-finalizada.png'),fullPage:true});
     await page.reload({waitUntil:'domcontentloaded'});
     await wait(()=>page.evaluate(()=>!!window.BarreiroRondaUI?.listarBuracos),'histórico carregado');
     const rows=await page.evaluate(()=>window.BarreiroRondaUI.listarBuracos());
