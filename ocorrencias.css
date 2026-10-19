@@ -1,0 +1,20 @@
+/* Botão de campo: uma marcação de buraco por toque, sem foto nem formulário obrigatório. */
+.hole-quick{position:absolute;z-index:730;pointer-events:auto;bottom:92px;left:50%;transform:translateX(-50%);border:2px solid white;border-radius:999px;padding:11px 20px;min-height:48px;min-width:146px;background:#b53d2d;color:#fff;font-size:13px;font-weight:850;box-shadow:0 8px 23px #122b4160;white-space:nowrap;cursor:pointer}
+.hole-quick[hidden],.hole-section [hidden]{display:none!important}
+.hole-quick:disabled{opacity:.55}
+.hole-section{border-top:1px solid #e6edf3;margin:11px 0;padding:10px 0}
+.hole-toggle{width:100%;min-height:42px;border:1px solid #d5e0e8;background:#f5f8fa;color:#294b63;font-size:12px;font-weight:850;border-radius:10px}
+.hole-section #holeContent{font-size:11px;line-height:1.45;padding:8px 0;color:#3e5268}
+.hole-help{font-size:11px;color:#718193}
+.hole-export-actions{display:flex;gap:7px;margin:9px 0}
+.hole-export-actions button,.hole-item button{padding:8px 9px;border:1px solid #d3dee6;border-radius:9px;background:#fff;color:#2a617a;font-weight:750}
+.hole-list{max-height:180px;overflow:auto}
+.hole-item{padding:8px 0;border-top:1px solid #edf1f4}
+.hole-item div{margin:3px 0;color:#6b8191}
+#holeInfo{color:#24755b;font-weight:700}
+@media(max-width:700px){
+ .ronda-root .ronda-quick{bottom:calc(env(safe-area-inset-bottom,0px) + 20px);left:auto;right:12px;transform:none;min-width:0;width:calc(50% - 17px);padding:10px 5px;font-size:11px;min-height:48px}
+ .hole-quick{bottom:calc(env(safe-area-inset-bottom,0px) + 20px);left:12px;transform:none;min-width:0;width:calc(50% - 17px);padding:10px 6px;font-size:13px;min-height:48px}
+ .nav-panel-open .hole-quick{display:none!important}
+}
+@media(min-width:701px){.hole-quick{bottom:82px}}
