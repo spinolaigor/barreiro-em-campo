@@ -162,6 +162,11 @@ async function main(){
     page.on('dialog',dialog=>dialog.type()==='prompt'?dialog.accept(dialogs.shift()):dialog.accept());
     await page.locator('[data-hole="edit"]').last().click();
     await wait(()=>page.locator('#holeContent').getByText(/Rua de teste/).isVisible(),'referência editada');
+    dialogs.push('Rua Simulada B','250');
+    await page.locator('[data-hole="edit"]').nth(1).click();
+    dialogs.push('Avenida Simulada C','400');
+    await page.locator('[data-hole="edit"]').first().click();
+    await page.screenshot({path:path.join(evidenceDir,'05-tres-enderecos.png'),fullPage:true});
     saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('barreiro.rondas.v1')).current);
     assert.equal(saved.potholes[0].logradouro,'Rua de teste');
     assert.equal(saved.potholes[0].numeroAproximado,'120');
@@ -192,19 +197,21 @@ async function main(){
     assert.match(csvContent,/B001/);
     assert.match(csvContent,/B002/);
     assert.match(csvContent,/B003/);
+    assert.match(csvContent,/Rua Simulada B/);
+    assert.match(csvContent,/Avenida Simulada C/);
     assert.equal(csvContent.trim().split('\r\n').length,4,'cabeçalho e três buracos');
     // Validar PDF binário com ferramenta de leitura, quando presente na imagem Ubuntu.
     try{
-      const pdfText=execFileSync('pdftotext',[path.join(evidenceDir,sent[0].name),'-'],{encoding:'utf8'});
+      const pdfPath=path.join(evidenceDir,sent[0].name);
+      const pdfText=execFileSync('python3',[path.join(base,'tests','validar-pdf.py'),pdfPath],{encoding:'utf8'});
       assert.match(pdfText,/B001/);
       assert.match(pdfText,/B002/);
       assert.match(pdfText,/B003/);
       assert.match(pdfText,/Rua de teste/);
+      assert.match(pdfText,/Rua Simulada B/);
+      assert.match(pdfText,/Avenida Simulada C/);
       console.log('PDF lido por pdftotext; três ocorrências e logradouro conferidos.');
-    }catch(e){
-      if(e.code==='ENOENT')console.log('pdftotext não instalado; PDF validado por estrutura binária.');
-      else throw e;
-    }
+    }catch(e){throw new Error('Falha ao ler PDF pelo pypdf: '+String(e.message||e));}
     // Navegador sem compartilhamento de arquivos: um clique produz os DOIS downloads.
     await page.evaluate(()=>Object.defineProperty(navigator,'canShare',
       {configurable:true,value:()=>false}));
