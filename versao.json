@@ -1,9 +1,9 @@
 {
   "name": "Barreiro em Campo",
-  "version": "0.4.2-beta",
-  "stage": "piloto público em validação de campo",
+  "version": "0.4.3-beta",
+  "stage": "piloto público para validação em campo",
   "release_date": "2026-10-19",
-  "description": "GPS ao vivo, diagnóstico e painel territorial móvel sob demanda",
+  "description": "GPS ao vivo, painel móvel e marcação rápida de buracos com exportação CSV/PDF",
   "author": "Igor Spínola Mello",
-  "note": "Publicação experimental para validação de GPS e painel em celulares; históricos de ronda continuam no navegador."
+  "note": "GPS validado em simulação Chromium; validação física em Android pendente. Coordenadas e rondas permanecem locais."
 }
