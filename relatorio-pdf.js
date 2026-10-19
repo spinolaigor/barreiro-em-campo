@@ -242,6 +242,9 @@
     }
     if(!sorted.length)txt('Nenhuma ocorrencia registrada.',LEFT,y,10);
     pageCommands.push(commands);
+    const total=pageCommands.length;
+    for(let i=0;i<total;i++)pageCommands[i].push('BT /F1 8 Tf 0.46 0.53 0.59 rg 1 0 0 1 '+LEFT+
+      ' 34 Tm '+literal('Barreiro em Campo | Pagina '+(i+1)+' de '+total)+' Tj ET');
     const objects=new Map();
     objects.set(1,'<< /Type /Catalog /Pages 2 0 R >>');
     objects.set(3,'<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>');
