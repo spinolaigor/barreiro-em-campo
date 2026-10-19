@@ -2,6 +2,12 @@
 
 **Versão atual: v0.4.6-beta (relatório executivo de ronda)** — 19 de outubro de 2026.
 
+## Estado atual e homologação (leitura em 19/10/2026)
+
+A versão `v0.4.6-beta` está **publicada como piloto**. O relatório PDF/CSV com mapa e endereço aproximado foi implementado, com **50 testes automatizados aprovados** e ensaio em navegador com GPS simulado. **Ainda falta homologar GPS físico, compartilhamento nativo e legibilidade do PDF em Android**. A concordância de **91 registros da Micro 07** com anotações manuais relatadas pela equipe é evidência de contagem no levantamento, **não valida todos os endereços ou os arquivos PDF em aparelho real**.
+
+Para escopo, pendências e critérios de aceite, consultar [Estado do projeto](docs/ESTADO_DO_PROJETO.md), [Plano de evolução](docs/PLANO_DE_EVOLUCAO.md) e [Teste de campo](docs/TESTE_GPS_MOBILE.md). Esta atualização documental **não constitui nova versão do aplicativo**.
+
 ## v0.4.6-beta — Relatório de execução da ronda
 - Ronda finalizada exibe ação principal **Gerar relatório (PDF + CSV)**, inclusive no histórico.
 - PDF A4 com mapa da micro, malha de ruas quando disponível, percurso GPS segmentado nas pausas, pontos de buracos e indicadores: km, tempo ativo, total e distribuição por bairro.

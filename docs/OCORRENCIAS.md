@@ -1,32 +1,35 @@
-# Marcação rápida de buracos — protótipo de trabalho
+# Buracos e relatório de execução — Barreiro em Campo
 
-A função foi integrada como **piloto público v0.4.5-beta** após testes automatizados e simulação Chromium móvel com GPS virtual. A precisão e estabilidade do GPS físico ainda exigem teste prático em Android.
+**Versão de referência:** v0.4.6-beta (19/10/2026). **Piloto público, homologação física pendente.**
 
-## Operação
-- Iniciar uma Ronda GPS e aguardar localização válida; **+ Buraco** aparece na parte inferior do mapa.
-- Cada toque salva um ponto individual com coordenadas, horário, precisão, micro e bairro. Não exige foto ou formulário.
-- O ponto vermelho aparece sobre o mapa; a coordenada original do GPS é preservada.
-- O sistema preenche **automaticamente** rua e número de referência próximo com geometria viária e números públicos PBH/CTM (04/05/2026). Mantém GPS original e dados da ronda no navegador; a consulta local não envia coordenadas para serviços externos. Cruzamentos podem usar a direção recente do trajeto. O fiscal pode corrigir pelo painel **Buracos (N)**.
-- Abrir **Buracos (N)** e tocar em **Compartilhar relatório (PDF + planilha)**. O aplicativo gera os dois arquivos para a ronda selecionada (a ativa, ou a última finalizada), sem oferecer opções de formato. No Android compatível, o menu nativo solicita destinatário; sem suporte, ambos os arquivos vão para Downloads.
-- O CSV contém uma linha por ocorrência de todas as rondas preservadas no navegador e coordenadas WGS84.
-- Os pontos ficam dentro do mesmo backup JSON local das rondas; nenhuma coordenada é enviada ao GitHub ou ao Drive.
+## Registro em campo
 
-## Limites importantes
-- A marcação só é admitida durante ronda ativa, com posição GPS recente, precisão até 75 m e dentro da micro selecionada.
-- A precisão exibida é informada pelo aparelho e **não** a distância real comprovada até o buraco.
-- Logradouro e número automáticos são referências próximas de endereços cadastrados, não garantem correspondência exata ao local do buraco. Marcas em esquinas exigem conferência.
-- A identificação usa 94.444 números e 7.321 segmentos viários da Regional Barreiro; arquivo comprimido de aproximadamente 1 MB. Se a base não carregar, o GPS fica preservado e o fiscal deve informar manualmente rua e número antes de compartilhar.
-- O PDF é gerado localmente em formato A4 multipágina, sem impressão. O menu de compartilhamento **não confirma o recebimento pelo destinatário**; se o aparelho não suportar os dois arquivos, o fiscal deve compartilhá-los a partir de Downloads.
-- Sem sincronização automática com Drive e sem compartilhamento público de trajetos.
+1. Iniciar **Ronda GPS** em uma das dez micros, com posição válida.
+2. Tocar **+ Buraco** **uma vez para cada buraco**; salvar `B001`, `B002`, `B003` etc. (sequência reinicia em outra ronda).
+3. Cada marcação guarda GPS, precisão informada pelo aparelho, horário, micro e bairro. Não exige foto nem preenchimento manual.
+4. O sistema tenta completar **logradouro e número aproximado** por cadastro PBH/CTM local. Em esquina ou resultado duvidoso, a referência pode ser editada, sem substituir o GPS.
+5. Pausar e retomar mantém **os mesmos IDs**, sem inserir trechos fictícios entre segmentos GPS.
+6. **Finalizar** preserva a ronda no histórico. Em **Rondas salvas**, tocar **Gerar relatório (PDF + CSV)** na ronda desejada.
 
-## Roteiro de validação no aparelho após publicação
-- [x] Testes de lógica e simulação do fluxo em Chromium móvel 390×844 com GPS virtual, três ocorrências, geração e leitura de PDF/CSV, compartilhamento duplo simulado e capturas/vídeo.\n- [ ] Testar GPS físico e painel no Android com permissão precisa.
-- [ ] Validar botão + Buraco em Android/Chrome, incluindo captura de coordenadas em deslocamento e parado.
-- [ ] Testar GPS impreciso, fora da micro e após pausar a ronda; não criar ponto incorreto.
-- [ ] Verificar visualmente os dois botões inferiores em telas de 360–430 px, inclusive com o painel aberto.
-- [ ] Marcar múltiplos pontos e conferir códigos e marcadores sem duplicação.
-- [ ] Editar referência opcional de rua e número e conferir exportações.
-- [ ] Finalizar, recarregar, reabrir histórico e conferir CSV, impressão PDF e backup completo.
-- [ ] Confirmar preservação de rondas antigas sem campo `potholes`.
+O **PDF** contém uma capa objetiva: micro e período, km GPS registrados, tempo ativo, total de buracos, distribuição por bairro e mapa da micro com contorno, trajeto e marcações. Nas páginas seguintes, há uma **relação individual** agrupada por bairro e logradouro, com **ID, rua, nº aproximado e horário**. No mapa, pontos coincidentes podem aparecer sob um marcador com contagem; na relação permanecem **todos os IDs**. **Não deduplicar por endereço nem coordenada.**
 
-**Versão publicada como piloto, não homologada fisicamente.** Fazer testes móveis e corrigir discrepâncias observadas; não interpretar pontos como laudo topográfico.
+O **CSV** tem uma linha por marcação **da ronda selecionada**, com ID, data/hora, micro, bairro, rua, número, latitude, longitude, precisão GPS e link Google Maps. Não confundir com o CSV técnico do rastro.
+
+O relatório é preparado **no navegador** e compartilhado manualmente. Sem suporte a compartilhamento conjunto, são baixados os dois arquivos. Se houver endereços pendentes, o aplicativo solicita preenchimento antes da entrega; preservar os dados e corrigir o necessário.
+
+## Endereçamento e limites
+
+- Base pública reduzida para a Regional Barreiro: 7.321 segmentos de logradouro e 94.444 referências numéricas do cadastro CTM/PBH, corte de 04/05/2026.
+- O cadastro compactado é servido pelo site e consultado localmente no navegador; **primeiro carregamento depende de acesso à base**. Não há geocodificação remota contínua nem envio intencional de GPS a serviço externo.
+- Rua e número são **referências operacionais próximas**; não comprovam a posição exata do buraco nem a existência física de imóvel diante dele. Cruzamentos e vias paralelas exigem conferência.
+- A marcação requer ronda ativa e posição recente, dentro da micro e com precisão aceita. GPS impreciso/antigo ou fora da área **não deve gerar ponto**.
+- A distância do percurso é estimativa baseada nos pontos GPS aceitos, **não extensão integral de ruas vistoriadas**.
+- Todos os registros ficam no `localStorage` do aparelho, não no GitHub. **PDF/CSV não são backup integral**: baixar JSON em **Segurança e recuperação** para proteger histórico e ronda atual.
+
+## Evidência e verificação
+
+- PRs de referência: [#7](https://github.com/spinolaigor/barreiro-em-campo/pull/7) (marcação), [#8](https://github.com/spinolaigor/barreiro-em-campo/pull/8) (PDF/CSV), [#9](https://github.com/spinolaigor/barreiro-em-campo/pull/9) (referência cadastral) e [#10](https://github.com/spinolaigor/barreiro-em-campo/pull/10) (relatório executivo com mapa).
+- Suíte automatizada de **50 testes** + simulação Chromium móvel com GPS virtual: **aprovadas**, incluindo geração/leitura do PDF e CSV, 3 buracos e cenário **sintético** de 91 IDs sem deduplicação.
+- Na Micro 07 em 19/10/2026, o consolidado de **91 marcações** coincidiu com a anotação manual **relatada pela equipe**. Endereços, GPS físico e PDF final ainda precisam de conferência operacional.
+
+**Homologação pendente:** [Issue #2](https://github.com/spinolaigor/barreiro-em-campo/issues/2) · [Roteiro de campo](TESTE_GPS_MOBILE.md). Não registrar nomes de fiscais ou coordenadas individuais nos Issues públicos.
