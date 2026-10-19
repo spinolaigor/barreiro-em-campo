@@ -28,8 +28,8 @@ O relatório é preparado **no navegador** e compartilhado manualmente. Sem supo
 
 ## Evidência e verificação
 
-- PRs de referência: [#7](../pull/7) (marcação), [#8](../pull/8) (PDF/CSV), [#9](../pull/9) (referência cadastral) e [#10](../pull/10) (relatório executivo com mapa).
+- PRs de referência: [#7](https://github.com/spinolaigor/barreiro-em-campo/pull/7) (marcação), [#8](https://github.com/spinolaigor/barreiro-em-campo/pull/8) (PDF/CSV), [#9](https://github.com/spinolaigor/barreiro-em-campo/pull/9) (referência cadastral) e [#10](https://github.com/spinolaigor/barreiro-em-campo/pull/10) (relatório executivo com mapa).
 - Suíte automatizada de **50 testes** + simulação Chromium móvel com GPS virtual: **aprovadas**, incluindo geração/leitura do PDF e CSV, 3 buracos e cenário **sintético** de 91 IDs sem deduplicação.
 - Na Micro 07 em 19/10/2026, o consolidado de **91 marcações** coincidiu com a anotação manual **relatada pela equipe**. Endereços, GPS físico e PDF final ainda precisam de conferência operacional.
 
-**Homologação pendente:** [Issue #2](../issues/2) · [Roteiro de campo](TESTE_GPS_MOBILE.md). Não registrar nomes de fiscais ou coordenadas individuais nos Issues públicos.
+**Homologação pendente:** [Issue #2](https://github.com/spinolaigor/barreiro-em-campo/issues/2) · [Roteiro de campo](TESTE_GPS_MOBILE.md). Não registrar nomes de fiscais ou coordenadas individuais nos Issues públicos.

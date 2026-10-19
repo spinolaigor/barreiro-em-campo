@@ -35,21 +35,21 @@ Esses dados individuais não devem ser copiados para repositório público. Conf
 
 | Etapa | PR | Resultado |
 | --- | --- | --- |
-| Correções iniciais de posicionamento | [#3](../pull/3) | Integrada |
-| GPS ao vivo e interface limpa | [#5](../pull/5), [#6](../pull/6) | Consolidada pela #6 |
-| Marcação rápida de buracos | [#7](../pull/7) | v0.4.3-beta |
-| PDF e CSV com uma ação | [#8](../pull/8) | v0.4.4-beta |
-| Rua/número aproximados via PBH | [#9](../pull/9) | v0.4.5-beta |
-| Relatório com mapa e relação individual | [#10](../pull/10) | v0.4.6-beta |
-| GPS antigo em rascunho | [#1](../pull/1) | Encerrado **sem merge**, superado pela #6 |
+| Correções iniciais de posicionamento | [#3](https://github.com/spinolaigor/barreiro-em-campo/pull/3) | Integrada |
+| GPS ao vivo e interface limpa | [#5](https://github.com/spinolaigor/barreiro-em-campo/pull/5), [#6](https://github.com/spinolaigor/barreiro-em-campo/pull/6) | Consolidada pela #6 |
+| Marcação rápida de buracos | [#7](https://github.com/spinolaigor/barreiro-em-campo/pull/7) | v0.4.3-beta |
+| PDF e CSV com uma ação | [#8](https://github.com/spinolaigor/barreiro-em-campo/pull/8) | v0.4.4-beta |
+| Rua/número aproximados via PBH | [#9](https://github.com/spinolaigor/barreiro-em-campo/pull/9) | v0.4.5-beta |
+| Relatório com mapa e relação individual | [#10](https://github.com/spinolaigor/barreiro-em-campo/pull/10) | v0.4.6-beta |
+| GPS antigo em rascunho | [#1](https://github.com/spinolaigor/barreiro-em-campo/pull/1) | Encerrado **sem merge**, superado pela #6 |
 
 O histórico de commits, PRs e branches antigas permanece rastreável. **Não mesclar branches antigas por tentativa**, pois podem sobrescrever mudanças consolidadas.
 
 ## Backlog e decisão de produto
 
-1. **[Issue #2](../issues/2)** — Homologar **PDF + CSV por ronda** em Android, conteúdo da capa, contagem por bairro, relação de IDs e muitos pontos.
-2. **[Issue #4](../issues/4)** — Exibir nome de rua provável também na ferramenta **Onde estou?** (diferente de preencher endereços de buracos).
-3. **[Issue #11](../issues/11)** — Confiabilidade de backup/restauração, armazenamento local e histórico entre aparelhos.
+1. **[Issue #2](https://github.com/spinolaigor/barreiro-em-campo/issues/2)** — Homologar **PDF + CSV por ronda** em Android, conteúdo da capa, contagem por bairro, relação de IDs e muitos pontos.
+2. **[Issue #4](https://github.com/spinolaigor/barreiro-em-campo/issues/4)** — Exibir nome de rua provável também na ferramenta **Onde estou?** (diferente de preencher endereços de buracos).
+3. **[Issue #11](https://github.com/spinolaigor/barreiro-em-campo/issues/11)** — Confiabilidade de backup/restauração, armazenamento local e histórico entre aparelhos.
 
 Ver [plano de evolução](PLANO_DE_EVOLUCAO.md). Nenhuma alteração do aplicativo é proposta neste documento; a próxima entrega deve decorrer de problema verificado no uso e ter testes/critério de aceite.
 

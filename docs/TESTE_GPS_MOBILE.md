@@ -36,4 +36,4 @@
 
 Para cada problema: **modelo/aparelho, versão, etapa, esperado, ocorrido e print sem dados sensíveis**. Se necessário, comparar a contagem com anotação manual da equipe. Não publicar GPX, JSON real, endereços pessoais ou trajetória completa no repositório.
 
-**Referências:** [Issue #2](../issues/2), [Issue #4](../issues/4), [estado do projeto](ESTADO_DO_PROJETO.md). **O teste de 91 IDs automatizado é sintético**; os 91 buracos levantados na Micro 07 são evidência de contagem em campo, não homologação de todos os campos do PDF.
+**Referências:** [Issue #2](https://github.com/spinolaigor/barreiro-em-campo/issues/2), [Issue #4](https://github.com/spinolaigor/barreiro-em-campo/issues/4), [estado do projeto](ESTADO_DO_PROJETO.md). **O teste de 91 IDs automatizado é sintético**; os 91 buracos levantados na Micro 07 são evidência de contagem em campo, não homologação de todos os campos do PDF.

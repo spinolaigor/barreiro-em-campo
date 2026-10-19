@@ -4,7 +4,7 @@
 
 ## 1. Homologar o relatório atual — prioridade imediata
 
-**Issue [#2](../issues/2)**
+**Issue [#2](https://github.com/spinolaigor/barreiro-em-campo/issues/2)**
 
 - Testar em **Android físico** uma ronda com iniciar → marcar → pausar → retomar → finalizar → gerar relatório novamente pelo histórico.
 - Conferir **capa do PDF**: micro, início/fim, km do GPS, tempo ativo, total, quantidade por bairro e **mapa completo com contorno, trajeto e buracos**.
@@ -16,7 +16,7 @@
 
 ## 2. Qualidade da localização por endereço
 
-**Issue [#4](../issues/4)**
+**Issue [#4](https://github.com/spinolaigor/barreiro-em-campo/issues/4)**
 
 - Validar rua/número em esquinas, vias paralelas, divisas, bairros vizinhos e pontos com GPS impreciso, distinguindo **referência operacional** de endereço exato.
 - Mostrar **via provável também na consulta “Onde estou?”**, reutilizando base PBH local e evitando consultas remotas contínuas.
@@ -27,7 +27,7 @@
 
 ## 3. Preservar a informação coletada
 
-**Issue [#11](../issues/11)**
+**Issue [#11](https://github.com/spinolaigor/barreiro-em-campo/issues/11)**
 
 - Não confundir **PDF/CSV de uma ronda** com **backup JSON de todo o histórico**.
 - Testar perda de foco, recuperação da sessão, falha de armazenamento, troca de aparelho e restauração assistida antes de propor importador.
