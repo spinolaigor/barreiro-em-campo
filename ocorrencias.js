@@ -12,7 +12,8 @@
   let showPanel=false,loading=false,lastStatus='',lastCount=-1;
   // Relatório de uma única ronda: a ativa ou, após concluir, a mais recente.
   function selectedRound(){
-    return (gps()?.listarBuracos?.()||[])[0]||null;
+    const first=(gps()?.listarBuracos?.()||[])[0];
+    return first?(gps()?.obterRonda?.(first.id)||first):null;
   }
   function reportRows(selected){
     const round=selected||selectedRound();
@@ -58,6 +59,7 @@
   }
   function info(msg){
     lastStatus=msg;const el=byId('holeInfo');if(el)el.textContent=msg;
+    gps()?.notificar?.(msg);
   }
   function makePair(selected){
     const round=typeof selected==='string'
