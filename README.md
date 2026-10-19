@@ -1,69 +1,70 @@
-# Barreiro em Campo — mapa territorial público
+# Barreiro em Campo
 
-**Site em operação (piloto):** https://spinolaigor.github.io/barreiro-em-campo/ · **Versão atual:** v0.4.6-beta (piloto de campo) — [histórico de versões](VERSOES.md)
+**Mapa e apoio à fiscalização das 10 microrregiões da Regional Barreiro, Belo Horizonte.**
 
-**Validação física pendente:** o GPS e a marcação de buracos passaram em testes de lógica e em Chromium com GPS virtual, mas o comportamento de posicionamento real precisa ser testado no Android. Faça backup das rondas e mantenha a página aberta durante o teste.
+**Aplicativo:** https://spinolaigor.github.io/barreiro-em-campo/  
+**Versão pública:** `v0.4.6-beta` — piloto em validação operacional (19/10/2026).  
+**Situação e próximas etapas:** [Estado do projeto](docs/ESTADO_DO_PROJETO.md) · [Plano de evolução](docs/PLANO_DE_EVOLUCAO.md) · [Histórico](VERSOES.md).
 
-Projeto público de consulta cartográfica das **10 microrregiões da Regional Barreiro (Belo Horizonte)**, com busca por micro, bairro ou avenida, camadas territoriais e localização aproximada mediante permissão do navegador.
+## Para que serve
 
-**Elaboração cartográfica e estruturação das camadas vetoriais derivadas:** Igor Spínola Mello (2026).  
-**Fontes de referência:** Prefeitura de Belo Horizonte (PBH) e demais insumos geográficos do projeto. Consulte [CREDITOS.md](CREDITOS.md) e [LICENSE.txt](LICENSE.txt).
+- Consultar **10 micros**, bairros, limites territoriais e corredores no mapa.
+- Realizar **ronda GPS**: iniciar, pausar, retomar e finalizar, com trajeto aproximado salvo no próprio navegador.
+- Registrar **buracos individualmente**, com um toque em **+ Buraco**, sem foto nem formulário obrigatório.
+- Associar a cada buraco **rua e número de referência aproximado** a partir de cadastro PBH/CTM local, sujeito a conferência em campo.
+- Entregar **um PDF executivo e um CSV por ronda**, sem misturar rondas diferentes.
 
-## Ativar a publicação (uma única vez)
+**Princípio operacional:** um ID de ocorrência corresponde a um buraco. Se três marcações forem feitas diante do mesmo endereço, **são três buracos**, sem deduplicação por coordenada, rua ou número.
 
-1. Acesse [Settings → Pages](https://github.com/spinolaigor/barreiro-em-campo/settings/pages).
-2. Em **Build and deployment**, selecione **GitHub Actions** como origem (*Source*).
-3. Confira a execução automática em [Actions](https://github.com/spinolaigor/barreiro-em-campo/actions/workflows/pages.yml).
-4. Aguarde a execução mostrar **Success**. Só então distribua o endereço HTTPS do site para os fiscais.
+## Como utilizar na fiscalização
 
-O fluxo `.github/workflows/pages.yml` já está criado para publicar automaticamente cada alteração da branch `main`. A ativação inicial do Pages deve ser feita pelo proprietário do repositório.
+1. Abrir o aplicativo e selecionar a **micro**.
+2. Em **Ronda GPS**, tocar **Iniciar**. Manter a página em primeiro plano e conferir a localização.
+3. Tocar **+ Buraco** para cada ocorrência. O identificador sequencial é `B001`, `B002`, `B003` etc. **por ronda**. O GPS grava a posição primeiro; a referência de endereço é preenchida posteriormente.
+4. Usar **Pausar** e **Retomar** quando necessário. A mesma ronda preserva seu ID e os registros já feitos. Pausas não devem gerar linhas fictícias no trajeto.
+5. Ao concluir, tocar **Finalizar**. A ronda fica no histórico local; escolher **Gerar relatório (PDF + CSV)** nela. Conferir referências pendentes antes de compartilhar.
 
-## Conteúdo público
+### O que vem no relatório
 
-- `index.html`: mapa interativo com 10 micros, 79 localidades e corredores candidatos
-- `micros.geojson`: polígonos geográficos e metadados de proveniência
-- `CREDITOS.md` e `LICENSE.txt`: créditos, direitos e restrições de uso
+**Primeira página do PDF:** identificação da micro e da ronda, início/fim, distância GPS aproximada, tempo ativo, total de buracos, totais por bairro e **mapa da micro** com contorno, percurso e marcações. O desenho é gerado a partir da cartografia e das posições registradas, não é uma prova de cobertura integral das ruas.
 
-**Privacidade:** esta edição pública não inclui nomes dos fiscais. O GPS só é consultado após autorização do usuário. O projeto não substitui delimitação oficial nem verificação de ruas limítrofes.
+**Demais páginas:** relação dos buracos por **bairro e logradouro**, com **um ID por marcação**, rua, número de referência aproximado e horário. O CSV é complementar e mantém coordenadas, precisão do GPS e link para localização no Google Maps.
 
-**Compartilhamento:** após a publicação, um link individual para uma micro pode ser enviado com `#micro=01`, substituindo o número.
+**Arquivos e privacidade:** os relatórios são gerados no navegador; em aparelhos compatíveis, o fiscal escolhe o destinatário pelo menu de compartilhamento. Se o envio conjunto não for suportado, são baixados PDF e CSV. O projeto não envia automaticamente as rondas ao GitHub, ao Drive nem a um servidor do aplicativo.
 
-Para visualizar as geometrias no aplicativo Google Maps, é necessário importá-las separadamente no Google My Maps; o site não oferece navegação por voz.
+## Relatório não é backup
 
-## Modo Ronda GPS — versão experimental
+- **PDF + CSV:** entrega operacional de **uma** ronda à equipe.
+- **Backup completo JSON:** cópia de segurança da **ronda em andamento e de todo o histórico**. Fica recolhido em **Segurança e recuperação** no painel; em falha de gravação aparece com destaque.
+- **GPX/GeoJSON/CSV técnicos de trajeto:** disponíveis como opções avançadas, não como entrega principal.
 
-O mapa conta com um botão **Ronda GPS**, disponível no celular. A experiência foi desenhada para três ações simples:
+O armazenamento `localStorage` é do aparelho/navegador; não existe sincronização automática entre aparelhos nem importação de backup pela interface. Antes de trocar de celular, limpar dados do site ou testar alterações importantes, faça **backup completo JSON** e guarde-o fora do navegador em local autorizado. Ver [RECUPERACAO.md](RECUPERACAO.md).
 
-1. **Iniciar ronda** — selecionar a micro e autorizar o GPS.
-2. **Marcar vistoria** — registrar com um toque um ponto efetivamente inspecionado (a posição precisa estar recente e dentro da micro escolhida).
-3. **Finalizar** — pausar e retomar quando necessário; ao terminar, salvar o percurso e exportar em **GPX, GeoJSON ou CSV**.
+## Situação da validação
 
-Os pontos de GPS entram no registro apenas **dentro da micro selecionada**. Leituras com precisão ruim, saltos impossíveis e pausas são tratados de forma conservadora. O caminho traçado é **indicativo**, não representa automaticamente a cobertura ou a conclusão de todas as ruas.
+**Concluído tecnicamente:** publicação da `v0.4.6-beta`, suíte de **50 testes automatizados** e simulação Chromium móvel com GPS virtual, PDF legível, CSV e compartilhamento simulado; último teste de referência: [PR #10](https://github.com/spinolaigor/barreiro-em-campo/pull/10).
 
-**Privacidade:** os percursos e marcações são gravados somente no armazenamento local do navegador no próprio aparelho, e **não são publicados no repositório ou enviados ao GitHub**. Exportar cria um arquivo para o usuário compartilhar sob sua responsabilidade. Qualquer pessoa com acesso ao aparelho/navegador poderá visualizar os registros locais; convém utilizar dispositivo autorizado e gerenciar os arquivos exportados com cuidado.
+**Evidência operacional parcial:** na ronda da **Micro 07 (19/10/2026)**, a equipe informou **91 buracos nas anotações manuais**, compatíveis com o consolidado de 91 registros de campo. Essa concordância verifica a **contagem naquele levantamento**; **não valida automaticamente endereço de todos os pontos, quilometragem, GPS físico ou diagramação final do PDF no Android**.
 
-**Limitação importante:** o site usa Geolocation API com a página em primeiro plano. Os navegadores móveis podem pausar o GPS ao bloquear a tela ou alternar para outro aplicativo. Por isso, o modo de ronda **pausa ao sair de foco**, e precisa ser retomado quando voltar à página. Recurso de manter tela acesa é solicitado quando disponível, mas **não há gravação garantida em segundo plano**. Nunca opere o celular enquanto dirige; delegue a interação ao passageiro ou pare em local seguro.
+**Pendente:** homologação física do GPS e da exportação no Android; conferência de rua e número aproximados em cruzamentos; checagem de PDF com grande volume de pontos. Ver [roteiro de campo](docs/TESTE_GPS_MOBILE.md) e [Issue #2](https://github.com/spinolaigor/barreiro-em-campo/issues/2).
 
-**Resiliência:** a ronda é salva no navegador ao longo do percurso. Após recarregar a página, uma ronda interrompida pode ser retomada manualmente. Limpar o armazenamento do navegador pode apagar os registros não exportados. Para uso oficial e continuado, fazer pilotos em diferentes celulares e estabelecer orientações de privacidade e conservação dos dados.
+## Limites e segurança
 
-A análise de percentual de ruas percorridas ou consideradas vistoriadas **não está implementada**; isso exige associar GPS à malha viária e definir regras operacionais de aceitação da vistoria.
+- O GPS é **aproximado**, condicionado à precisão e às permissões do aparelho. A coleta em segundo plano **não é garantida**; ao perder o foco a ronda pode pausar, exigindo retomada.
+- O sistema distingue **distância GPS registrada** de extensão de ruas vistoriadas; passar por uma via não comprova que ela foi fiscalizada.
+- A referência **“próximo ao nº”** aponta um imóvel cadastrado próximo, não confirma o número exato em frente ao buraco; o fiscal pode corrigir a referência preservando o GPS.
+- A ferramenta **Onde estou?** mostra posição e referência territorial, mas **ainda não exibe automaticamente o nome da rua em texto**; essa evolução está na [Issue #4](https://github.com/spinolaigor/barreiro-em-campo/issues/4).
+- Não opere o celular enquanto dirige. Dados de percurso, horário e identificação operacional precisam ser armazenados/compartilhados apenas em ambiente autorizado.
 
-## Marcação rápida de buracos (v0.4.3-beta)
-Durante uma ronda ativa, toque em **＋ Buraco** para registrar um ponto individual, com coordenadas GPS, horário, precisão, micro e bairro. Não exige foto nem formulário.
-O código da ocorrência é sequencial em cada ronda. O aplicativo consulta **localmente** uma base compacta do Cadastro Técnico Municipal (PBH, 04/05/2026) para associar a rua ao GPS e informar um **número cadastral próximo**. Nas esquinas, o trajeto recente pode ajudar a escolher a via. As referências são **aproximadas e sujeitas à conferência**, não comprovam o imóvel exato diante do buraco. A operação de marcar permanece com um toque; a consulta é executada depois de salvar o ponto. Se faltar referência ou houver dúvida, use **Ronda GPS → Buracos (N) → Editar referência**. O botão de compartilhar pede correção de campos pendentes antes de gerar PDF e CSV. O cadastro público é servido como arquivo compacto; as coordenadas das rondas não são enviadas para geocodificação.
-Abra **Ronda GPS → Buracos (N)** e toque em **Compartilhar relatório (PDF + planilha)**. Um único toque cria os dois arquivos da ronda: PDF legível e CSV para tratamento. Em aparelhos compatíveis, o menu de compartilhamento abre com ambos os arquivos, e o fiscal escolhe o destinatário. Quando o navegador não aceita envio de dois arquivos, os dois são baixados juntos, sem escolha de formato. Também faça o **backup completo JSON**. Os dados ficam somente neste navegador até exportação e compartilhamento manual.
-Consulte [instruções e limitações](docs/OCORRENCIAS.md). O teste automatizado em Chromium inclui três locais simulados, vídeo, prints, leitura do PDF, leitura do CSV e confirmação de dois arquivos entregues à API de compartilhamento simulada. **Nenhum envio real é feito sem seleção do destinatário.** O GPS virtual não substitui teste físico em Android.
+## Documentação e manutenção
 
-## Versões e falhas de GPS (v0.4.0)
+- [Estado atual, evidências e limites](docs/ESTADO_DO_PROJETO.md)
+- [Plano de evolução e prioridades](docs/PLANO_DE_EVOLUCAO.md)
+- [Procedimento de validação física](docs/TESTE_GPS_MOBILE.md)
+- [Marcação de buracos e relatórios](docs/OCORRENCIAS.md)
+- [Histórico de versões](VERSOES.md) · [Recuperação dos dados](RECUPERACAO.md)
+- [Créditos e fontes geográficas](CREDITOS.md) · [Licença](LICENSE.txt)
 
-Consulte [VERSOES.md](VERSOES.md) para saber o que mudou no aplicativo e comparar versões anteriores pelo histórico de commits. O mapa registra eventos de pausa, falhas e intervalos longos sem pontos de GPS e marca **o último ponto válido antes de uma interrupção** em laranja. Esse marcador **não representa necessariamente o local exato da perda do GPS**.
+**Desenvolvimento:** HTML, CSS, JavaScript, Leaflet e GitHub Pages. O workflow [Publicar Barreiro em Campo](.github/workflows/pages.yml) publica `main`; as branches/PRs passam por testes automatizados. Para testar localmente: `node --check ronda.js` e `node --test tests/*.test.cjs`.
 
-O histórico de versões do site **não é backup das rondas**. As rondas permanecem neste navegador até serem exportadas; salvar arquivos GPX, GeoJSON ou CSV ao terminar cada ronda é essencial para evitar perda de dados. Arquivos de trajetória incluem coordenadas e horários, portanto devem ser guardados e compartilhados somente com as pessoas autorizadas.
-
-## Preservação e backup (v0.4.1)
-
-O painel da ronda oferece **Baixar backup completo** em JSON. O arquivo inclui o histórico e a ronda atual, inclusive dados ainda em memória se o salvamento falhar. Confira o download e envie pelo celular ao local privado autorizado. Não envie rondas para este repositório ou para a pasta de publicação do site.
-
-Não há mais descarte automático por quantidade de rondas, pontos do histórico ou eventos. O armazenamento continua finito: se falhar, a coleta é pausada e o usuário deve baixar o backup antes de fechar a página. Use apenas uma aba para gravar. Não há sincronização automática entre aparelhos nem importador de backup na interface nesta versão.
-
-Para validar o código: `node --check ronda.js` e `node --test tests/*.test.cjs`. Consulte [RECUPERACAO.md](RECUPERACAO.md) para retorno de versão.
+**Elaboração cartográfica e estruturação vetorial:** Igor Spínola Mello (2026). Fontes: PBH/CTM e insumos documentados em [CREDITOS.md](CREDITOS.md).
