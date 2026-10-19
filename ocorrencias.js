@@ -152,7 +152,8 @@
     const wrap=document.createElement('div');wrap.className='hole-section';
     wrap.innerHTML='<button type="button" id="holeToggle" class="hole-toggle" aria-controls="holePanel" aria-expanded="false">Buracos (0) ▾</button>'+
       '<div id="holePanel" hidden><div id="holeContent"></div></div>';
-    ronda.insertBefore(wrap,byId('rondaMessage'));
+    // O acesso ao relatório fica logo no início, acima do histórico e das opções técnicas.
+    ronda.insertBefore(wrap,byId('rondaContent'));
     byId('holeToggle').addEventListener('click',()=>{
       showPanel=!showPanel;byId('holeToggle').setAttribute('aria-expanded',String(showPanel));
       if(showPanel)renderPanel();sync();
