@@ -160,7 +160,7 @@ async function main(){
     await wait(()=>page.locator('#holeContent').getByText('B003',{exact:true}).isVisible(),'listagem de três buracos');
     const dialogs=['Rua de teste','120'];
     page.on('dialog',dialog=>dialog.type()==='prompt'?dialog.accept(dialogs.shift()):dialog.accept());
-    await page.locator('[data-hole="edit"]').first().click();
+    await page.locator('[data-hole="edit"]').last().click();
     await wait(()=>page.locator('#holeContent').getByText(/Rua de teste/).isVisible(),'referência editada');
     saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('barreiro.rondas.v1')).current);
     assert.equal(saved.potholes[0].logradouro,'Rua de teste');
