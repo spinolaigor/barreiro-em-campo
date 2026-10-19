@@ -17,12 +17,15 @@ jobs:
       - name: Preparar navegador de teste e Leaflet local
         run: |
           npm install --no-save --no-package-lock --no-audit --no-fund playwright@1.56.1 leaflet@1.9.4
+          npx playwright install ffmpeg
+          python3 -m pip install --user --quiet pypdf
           google-chrome --version
       - name: Validar scripts e realizar testes automatizados
         run: |
           node --check ronda.js
           node --check ocorrencias.js
           node --check tests/mobile-virtual.cjs
+          node --check relatorio-pdf.js
           node --test tests/*.test.cjs
       - name: Testar fluxo integral em Chromium 390x844 com GPS virtual
         run: node tests/mobile-virtual.cjs
@@ -34,5 +37,6 @@ jobs:
           path: |
             tests/mobile-virtual-ronda.png
             tests/mobile-virtual-painel.png
+            tests/_evidencias/
           if-no-files-found: ignore
-          retention-days: 7
+          retention-days: 14

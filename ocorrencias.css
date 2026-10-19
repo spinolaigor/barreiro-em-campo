@@ -18,3 +18,9 @@
  .nav-panel-open .hole-quick{display:none!important}
 }
 @media(min-width:701px){.hole-quick{bottom:82px}}
+
+/* Uma ação de relatório, legível para quem não conhece formatos de arquivo. */
+.hole-export-actions button[data-hole="send"]{width:100%;min-height:50px;border-radius:12px;
+  border:0;background:#146f5b;color:#fff;font-size:13px;font-weight:850;
+  box-shadow:0 3px 12px #174f4630;line-height:1.35}
+.hole-export-actions button[data-hole="send"]:focus-visible{outline:3px solid #8bd0bd;outline-offset:2px}

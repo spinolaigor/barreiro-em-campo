@@ -1,6 +1,6 @@
 # Barreiro em Campo — mapa territorial público
 
-**Site em operação (piloto):** https://spinolaigor.github.io/barreiro-em-campo/ · **Versão atual:** v0.4.3-beta (piloto de campo) — [histórico de versões](VERSOES.md)
+**Site em operação (piloto):** https://spinolaigor.github.io/barreiro-em-campo/ · **Versão atual:** v0.4.4-beta (piloto de campo) — [histórico de versões](VERSOES.md)
 
 **Validação física pendente:** o GPS e a marcação de buracos passaram em testes de lógica e em Chromium com GPS virtual, mas o comportamento de posicionamento real precisa ser testado no Android. Faça backup das rondas e mantenha a página aberta durante o teste.
 
@@ -51,8 +51,8 @@ A análise de percentual de ruas percorridas ou consideradas vistoriadas **não 
 ## Marcação rápida de buracos (v0.4.3-beta)
 Durante uma ronda ativa, toque em **＋ Buraco** para registrar um ponto individual, com coordenadas GPS, horário, precisão, micro e bairro. Não exige foto nem formulário.
 O código da ocorrência é sequencial em cada ronda. Para informar uma **rua e número de referência aproximados**, abra **Ronda GPS → Buracos (N) → Editar referência**. Esses campos são opcionais: o sistema não inventa número de imóvel nem identifica automaticamente todas as ruas.
-Use **Exportar CSV** na seção Buracos para baixar uma linha por ocorrência. Use **Relatório / PDF** para abrir um relatório imprimível e escolher **Salvar como PDF** no navegador. Também faça o **backup completo JSON**. Os dados ficam somente neste navegador até exportação e compartilhamento manual.
-Consulte [instruções e limitações](docs/OCORRENCIAS.md). Os testes em Chromium usam GPS simulado e não substituem validação física em Android.
+Abra **Ronda GPS → Buracos (N)** e toque em **Compartilhar relatório (PDF + planilha)**. Um único toque cria os dois arquivos da ronda: PDF legível e CSV para tratamento. Em aparelhos compatíveis, o menu de compartilhamento abre com ambos os arquivos, e o fiscal escolhe o destinatário. Quando o navegador não aceita envio de dois arquivos, os dois são baixados juntos, sem escolha de formato. Também faça o **backup completo JSON**. Os dados ficam somente neste navegador até exportação e compartilhamento manual.
+Consulte [instruções e limitações](docs/OCORRENCIAS.md). O teste automatizado em Chromium inclui três locais simulados, vídeo, prints, leitura do PDF, leitura do CSV e confirmação de dois arquivos entregues à API de compartilhamento simulada. **Nenhum envio real é feito sem seleção do destinatário.** O GPS virtual não substitui teste físico em Android.
 
 ## Versões e falhas de GPS (v0.4.0)
 

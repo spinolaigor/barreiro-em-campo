@@ -29,15 +29,17 @@ jobs:
           node --check localizacao-campo.js
           node --check navegacao.js
           node --check ocorrencias.js
+          node --check relatorio-pdf.js
           node --test tests/*.test.cjs
       - name: Preparar somente arquivos públicos
         run: |
           mkdir -p public
-          cp index.html ronda.js ronda.css localizacao-campo.js localizacao-campo.css navegacao.js navegacao.css ocorrencias.js ocorrencias.css micros.geojson CREDITOS.md LICENSE.txt README.md VERSOES.md versao.json RECUPERACAO.md public/
+          cp index.html ronda.js ronda.css localizacao-campo.js localizacao-campo.css navegacao.js navegacao.css ocorrencias.js ocorrencias.css relatorio-pdf.js micros.geojson CREDITOS.md LICENSE.txt README.md VERSOES.md versao.json RECUPERACAO.md public/
           test -s public/navegacao.js
           test -s public/navegacao.css
           test -s public/ocorrencias.js
           test -s public/ocorrencias.css
+          test -s public/relatorio-pdf.js
       - name: Configurar Pages
         uses: actions/configure-pages@v5
         with:

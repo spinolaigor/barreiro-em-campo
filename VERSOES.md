@@ -1,6 +1,15 @@
 # Barreiro em Campo — Histórico de versões
 
-**Versão atual: v0.4.3-beta (piloto de marcação de buracos)** — 19 de outubro de 2026.
+**Versão atual: v0.4.4-beta (piloto de relatório de um toque)** — 19 de outubro de 2026.
+
+## v0.4.4-beta — Relatório único (PDF + CSV)
+- **Um único botão** na seção Buracos prepara dois arquivos da ronda, sem seleção de formatos: PDF e planilha CSV.
+- Android compatível: menu nativo de compartilhamento com os dois arquivos; cabe ao usuário escolher destinatário.
+- Navegador sem suporte a compartilhamento múltiplo: os dois arquivos são baixados juntos.
+- Geração local de PDF binário A4 multipágina, sem exigir impressão nem servidor, com agrupamento por bairro e rua e listagem de coordenadas.
+- Opções avançadas (GPX/GeoJSON/CSV técnicos) recolhidas no histórico; a opção operacional prioritária é compartilhar o relatório.
+- Teste de ponta a ponta em Chromium móvel 390×844: três buracos em posições distintas, edição de referências, PDF/CSV gerados e lidos, envio simulado de dois arquivos, alternativa de dois downloads e persistência; vídeo e capturas disponíveis no GitHub Actions.
+- **Limitação:** o GPS foi simulado; precisão física e menu de compartilhamento do Android devem ser verificados em campo.
 
 ## v0.4.3-beta — Marcação rápida de buracos
 - Botão **＋ Buraco** durante ronda GPS: grava ocorrência individual com coordenadas, bairro, micro, horário e precisão.
